@@ -593,19 +593,6 @@ export default function Vinted() {
                     </Button>
                     <Button
                       variant="contained"
-                      onClick={() => setSelectedCategory('Kiegészítők')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Kiegészítők' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Kiegészítők' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Kiegészítők
-                    </Button>
-                    <Button
-                      variant="contained"
                       onClick={() => setSelectedCategory('Sapkák')}
                       sx={{ 
                         backgroundColor: selectedCategory === 'Sapkák' ? '#333' : '#555',
@@ -617,6 +604,20 @@ export default function Vinted() {
                     >
                       Sapkák
                     </Button>
+                    <Button
+                      variant="contained"
+                      onClick={() => setSelectedCategory('Kiegészítők')}
+                      sx={{ 
+                        backgroundColor: selectedCategory === 'Kiegészítők' ? '#333' : '#555',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: selectedCategory === 'Kiegészítők' ? '#444' : '#666',
+                        }
+                      }}
+                    >
+                      Kiegészítők
+                    </Button>
+                
 
                   </Box>
 
