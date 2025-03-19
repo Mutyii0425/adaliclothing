@@ -82,21 +82,38 @@ app.post('/login', async (req, res) => {
   
   try {
     const [rows] = await db.execute('SELECT * FROM user WHERE email = ?', [email]);
-    if (rows.length > 0) {
-      const user = rows[0];
-      return res.json({ 
-        success: true,
-        message: 'Sikeres bejelentkezés!',
-        user: {
-          username: user.felhasznalonev,
-          email: user.email,
-          f_azonosito: user.f_azonosito  
-        }
+    if (rows.length === 0) {
+      return res.status(401).json({ 
+        error: 'Hibás email vagy jelszó!',
+        errorType: 'invalid_credentials'
       });
     }
+
+    const user = rows[0];
+    const isPasswordValid = await bcrypt.compare(password, user.jelszo);
+    
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        error: 'Hibás email vagy jelszó!',
+        errorType: 'invalid_credentials'
+      });
+    }
+
+    return res.json({ 
+      success: true,
+      message: 'Sikeres bejelentkezés!',
+      user: {
+        username: user.felhasznalonev,
+        email: user.email,
+        f_azonosito: user.f_azonosito  
+      }
+    });
   } catch (error) {
     console.error('Server error:', error);
-    return res.status(500).json({ error: 'Szerver hiba!' });
+    return res.status(500).json({ 
+      error: 'Szerver hiba!',
+      errorType: 'server_error'
+    });
   }
 });
 
