@@ -130,41 +130,43 @@ export default function SignInForm() {
   
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const response = await fetch('http://localhost:4000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+  // A handleLogin függvényben már van hibaüzenet kezelés:
+const handleLogin = async (e) => {
+  e.preventDefault();
   
-      const data = await response.json();
+  try {
+    const response = await fetch('http://localhost:4000/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
   
-      if (!response.ok) {
-        setErrorMessage(data.error);
-        setErrorAlert(true);
-        setTimeout(() => setErrorAlert(false), 3000);
-        return;
-      }
+    const data = await response.json();
   
-      if (response.ok) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setLoggedInUsername(data.user.username);
-        setSuccessAlert(true);
-        setTimeout(() => {
-          setSuccessAlert(false);
-          navigate('/kezdolap');
-        }, 2000);
-      }
-  
-    } catch (error) {
-      setErrorMessage('Szerverhiba történt!');
+    if (!response.ok) {
+      setErrorMessage(data.error || 'Hibás email vagy jelszó!');
       setErrorAlert(true);
       setTimeout(() => setErrorAlert(false), 3000);
+      return;
     }
-  };
+  
+    if (response.ok) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setLoggedInUsername(data.user.username);
+      setSuccessAlert(true);
+      setTimeout(() => {
+        setSuccessAlert(false);
+        navigate('/kezdolap');
+      }, 2000);
+    }
+  
+  } catch (error) {
+    setErrorMessage('Szerverhiba történt!');
+    setErrorAlert(true);
+    setTimeout(() => setErrorAlert(false), 3000);
+  }
+};
+
   
   
   
@@ -589,6 +591,7 @@ export default function SignInForm() {
         },
       },
     }}
+    data-testid="login-error-alert" // Adjunk hozzá egy data-testid attribútumot
   >
     <Card
       sx={{
@@ -632,10 +635,15 @@ export default function SignInForm() {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
+            data-testid="login-error-title" // Adjunk hozzá egy data-testid attribútumot
           >
             Bejelentkezési hiba!
           </Typography>
-          <Typography variant="body1" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+          <Typography 
+            variant="body1" 
+            sx={{ color: darkMode ? '#aaa' : '#666' }}
+            data-testid="login-error-message" // Adjunk hozzá egy data-testid attribútumot
+          >
             {errorMessage}
           </Typography>
         </Box>
@@ -643,6 +651,7 @@ export default function SignInForm() {
     </Card>
   </Box>
 )}
+
       </Container>
     </div>
   );
