@@ -19,6 +19,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import darkLogo from './logo02.png';
+import { Dialog, CircularProgress } from '@mui/material';
 
 const randomColor = () => {
   const r = Math.floor(Math.random() * 256);
@@ -37,6 +38,9 @@ export default function SignInForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [darkMode, setDarkMode] = useState(true);
   const [email, setEmail] = useState(''); 
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorTitle, setErrorTitle] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const dvdLogoRef = useRef({
@@ -130,42 +134,118 @@ export default function SignInForm() {
   
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
-  // A handleLogin függvényben már van hibaüzenet kezelés:
-const handleLogin = async (e) => {
-  e.preventDefault();
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
   
-  try {
-    const response = await fetch('http://localhost:4000/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+  // Email változás kezelése validációval
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+  };
   
-    const data = await response.json();
-  
-    if (!response.ok) {
-      setErrorMessage(data.error || 'Hibás email vagy jelszó!');
-      setErrorAlert(true);
-      setTimeout(() => setErrorAlert(false), 3000);
+  // Módosított handleLogin függvény
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    // Email validáció
+    if (!validateEmail(email)) {
+      setErrorTitle('Érvénytelen email cím');
+      setErrorMessage('Kérjük, adj meg egy érvényes email címet.');
+      setShowErrorDialog(true);
       return;
     }
-  
-    if (response.ok) {
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setLoggedInUsername(data.user.username);
-      setSuccessAlert(true);
-      setTimeout(() => {
-        setSuccessAlert(false);
-        navigate('/kezdolap');
-      }, 2000);
+    
+    // Jelszó validáció
+    if (password.length < 6) {
+      setErrorTitle('Érvénytelen jelszó');
+      setErrorMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie.');
+      setShowErrorDialog(true);
+      return;
     }
+    
+    setIsLoading(true); // Töltési állapot beállítása
+    
+    try {
+      const response = await fetch('http://localhost:4000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+    
+      const data = await response.json();
+    
+      if (!response.ok) {
+        setErrorTitle('Bejelentkezési hiba');
+        setErrorMessage(data.error || 'Hibás email vagy jelszó!');
+        setShowErrorDialog(true);
+        setIsLoading(false);
+        return;
+      }
+    
+      if (response.ok) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setLoggedInUsername(data.user.username);
+        setSuccessAlert(true);
+        setTimeout(() => {
+          setSuccessAlert(false);
+          navigate('/kezdolap');
+        }, 2000);
+      }
+    
+    } catch (error) {
+      setErrorTitle('Szerver hiba');
+      setErrorMessage('Szerverhiba történt! Kérjük, próbáld újra később.');
+      setShowErrorDialog(true);
+    } finally {
+      setIsLoading(false); // Töltési állapot visszaállítása
+    }
+  };
   
-  } catch (error) {
-    setErrorMessage('Szerverhiba történt!');
-    setErrorAlert(true);
-    setTimeout(() => setErrorAlert(false), 3000);
-  }
-};
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setErrorTitle('Hiányzó email cím');
+      setErrorMessage('Kérjük, add meg az email címed a jelszó visszaállításához.');
+      setShowErrorDialog(true);
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      setErrorTitle('Érvénytelen email cím');
+      setErrorMessage('Kérjük, adj meg egy érvényes email címet.');
+      setShowErrorDialog(true);
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:4000/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setErrorTitle('Jelszó visszaállítás');
+        setErrorMessage(`A jelszó visszaállítási linket elküldtük a következő címre: ${email}`);
+        setShowErrorDialog(true);
+      } else {
+        setErrorTitle('Hiba történt');
+        setErrorMessage(data.error || 'Nem sikerült elküldeni a jelszó-visszaállítási emailt.');
+        setShowErrorDialog(true);
+      }
+    } catch (error) {
+      setErrorTitle('Szerver hiba');
+      setErrorMessage('Nem sikerült kapcsolódni a szerverhez. Kérjük, próbáld újra később.');
+      setShowErrorDialog(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   
   
@@ -320,35 +400,35 @@ const handleLogin = async (e) => {
     }}
   >
     <TextField
-      label="E-mail"
-      type="email"
-      variant="outlined"
-      name="email"
-      required
-      fullWidth
-      margin="normal"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-      InputProps={{
-        style: { color: darkMode ? 'white' : 'black' },
-      }}
-      InputLabelProps={{
-        style: { color: darkMode ? 'white' : 'black' },
-      }}
-      sx={{
-        '& input': {
-          backgroundColor: darkMode ? '#333' : '#fff',
-          fontSize: {
-            xs: '0.9rem',
-            sm: '1rem'
-          },
-          padding: {
-            xs: '12px',
-            sm: '14px'
+        label="E-mail"
+        type="email"
+        variant="outlined"
+        name="email"
+        required
+        fullWidth
+        margin="normal"
+        value={email}
+        onChange={handleEmailChange}
+        InputProps={{
+          style: { color: darkMode ? 'white' : 'black' },
+        }}
+        InputLabelProps={{
+          style: { color: darkMode ? 'white' : 'black' },
+        }}
+        sx={{
+          '& input': {
+            backgroundColor: darkMode ? '#333' : '#fff',
+            fontSize: {
+              xs: '0.9rem',
+              sm: '1rem'
+            },
+            padding: {
+              xs: '12px',
+              sm: '14px'
+            }
           }
-        }
-      }}
-    />
+        }}
+      />
 
     <TextField
       label="Jelszó"
@@ -398,39 +478,69 @@ const handleLogin = async (e) => {
       }}
     />
 
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginTop: {
-          xs: 2,
-          sm: 3
-        }
-      }}
-    >
-      <Button
-        onClick={handleLogin}
-        type="submit"
-        variant="contained"
-        style={{ color: darkMode ? 'white' : 'black' }}
-        sx={{
-          backgroundColor: darkMode ? '#555' : '#ddd',
-          border: '2px solid',
-          borderColor: 'black',
-          padding: {
-            xs: '8px 16px',
-            sm: '10px 20px'
-          },
-          fontSize: {
-            xs: '0.9rem',
-            sm: '1rem'
-          }
-        }}
-      >
-        Bejelentkezés
-      </Button>
+    
+<Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: {
+      xs: 2,
+      sm: 3
+    },
+    flexDirection: 'column',
+    gap: 2
+  }}
+>
+  <Button
+    onClick={handleLogin}
+    type="submit"
+    variant="contained"
+    disabled={isLoading}
+    style={{ color: darkMode ? 'white' : 'black' }}
+    sx={{
+      backgroundColor: darkMode ? '#555' : '#ddd',
+      border: '2px solid',
+      borderColor: 'black',
+      padding: {
+        xs: '8px 16px',
+        sm: '10px 20px'
+      },
+      fontSize: {
+        xs: '0.9rem',
+        sm: '1rem'
+      }
+    }}
+  >
+    {isLoading ? (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: 20, height: 20, mr: 1 }}>
+          <CircularProgress size={20} color="inherit" />
+        </Box>
+        Bejelentkezés...
+      </Box>
+    ) : (
+      'Bejelentkezés'
+    )}
+  </Button>
+  
+  <Button
+    onClick={handleForgotPassword}
+    variant="text"
+    sx={{
+      color: darkMode ? '#90caf9' : '#1976d2',
+      textTransform: 'none',
+      fontSize: '0.9rem',
+      '&:hover': {
+        backgroundColor: 'transparent',
+        textDecoration: 'underline'
+      }
+    }}
+  >
+    Elfelejtetted a jelszavad?
+  </Button>
+</Box>
     </Box>
-  </Box>
+  
 
         <Button
           variant="contained"
@@ -651,6 +761,105 @@ const handleLogin = async (e) => {
     </Card>
   </Box>
 )}
+
+<Dialog
+  open={showErrorDialog}
+  onClose={() => setShowErrorDialog(false)}
+  sx={{
+    '& .MuiDialog-paper': {
+      backgroundColor: darkMode ? '#1E1E1E' : '#fff',
+      borderRadius: {
+        xs: '15px',
+        sm: '25px'
+      },
+      padding: {
+        xs: '1.5rem',
+        sm: '3rem'
+      },
+      minWidth: {
+        xs: '80%',
+        sm: '450px'
+      },
+      textAlign: 'center',
+      boxShadow: darkMode 
+        ? '0 8px 32px rgba(255,87,87,0.3)' 
+        : '0 8px 32px rgba(255,87,87,0.2)',
+      border: '2px solid',
+      borderColor: darkMode ? '#FF5757' : '#FF5757',
+      position: 'relative',
+      overflow: 'hidden'
+    }
+  }}
+>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '4px',
+      background: 'linear-gradient(90deg, #FF5757, #FF8A8A)',
+      animation: 'loadingBar 2s ease-in-out',
+      '@keyframes loadingBar': {
+        '0%': { width: '0%' },
+        '100%': { width: '100%' }
+      }
+    }}
+  />
+  <Box sx={{ position: 'relative' }}>    
+    <Typography 
+      variant="h4" 
+      sx={{ 
+        color: darkMode ? '#FF5757' : '#FF5757',
+        mb: 3,
+        fontWeight: 800,
+        letterSpacing: '1px',
+        textTransform: 'uppercase',
+        fontSize: {
+          xs: '1.2rem',
+          sm: '1.5rem',
+          md: '2rem'
+        },
+        padding: {
+          xs: '0.5rem',
+          sm: '1rem'
+        }
+      }}
+    >
+      {errorTitle}
+    </Typography>
+
+    <Typography 
+      variant="body1" 
+      sx={{ 
+        color: darkMode ? '#ccc' : '#555',
+        mb: 4,
+        fontWeight: 400,
+        lineHeight: 1.6
+      }}
+    >
+      {errorMessage}
+    </Typography>
+    
+    <Button
+      onClick={() => setShowErrorDialog(false)}
+      variant="contained"
+      sx={{
+        backgroundColor: darkMode ? '#FF5757' : '#FF5757',
+        color: 'white',
+        padding: '10px 24px',
+        borderRadius: '8px',
+        fontWeight: 600,
+        textTransform: 'none',
+        '&:hover': {
+          backgroundColor: darkMode ? '#FF8A8A' : '#FF8A8A',
+        }
+      }}
+    >
+      Értettem
+    </Button>
+  </Box>
+</Dialog>
 
       </Container>
     </div>

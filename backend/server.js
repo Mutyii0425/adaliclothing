@@ -8,6 +8,7 @@ import path from 'path';
 
 
 
+
 const app = express();
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
@@ -267,33 +268,32 @@ app.get('/users', (req, res) => {
 
 app.delete('/users/:id', (req, res) => {
   const userId = req.params.id;
-  const query = 'DELETE FROM user WHERE f_azonosito = ?';
-
-  db.query(query, [userId], (err, result) => {
-    if (err) {
-      console.log('Hiba a felhasználó törlésénél:', err);
-      res.status(500).json({ error: 'Hiba a törlés során' });
+  
+  // Először töröljük a kapcsolódó értékeléseket
+  const deleteRatingsQuery = 'DELETE FROM ratings WHERE f_azonosito = ?';
+  db.query(deleteRatingsQuery, [userId], (ratingErr, ratingResult) => {
+    if (ratingErr) {
+      console.log('Hiba az értékelések törlésénél:', ratingErr);
+      res.status(500).json({ error: 'Hiba az értékelések törlése során' });
       return;
     }
-    res.json({ message: 'Felhasználó sikeresen törölve' });
-  });
-});
-app.get('/user/:id', (req, res) => {
-  const userId = req.params.id;
-  console.log("Fetching user data for ID:", userId);
-
-  const query = 'SELECT felhasznalonev, email FROM user WHERE f_azonosito = ?';
-  db.query(query, [userId], (err, results) => {
-    if (err) {
-      console.log('Database error:', err);
-      return res.status(500).json({ error: 'Database error' });
-    }
-    console.log("Query results:", results);
-    if (results && results.length > 0) {
-      res.json(results[0]);
-    } else {
-      res.status(404).json({ error: 'User not found' });
-    }
+    
+    // Majd töröljük a felhasználót
+    const deleteUserQuery = 'DELETE FROM user WHERE f_azonosito = ?';
+    db.query(deleteUserQuery, [userId], (userErr, userResult) => {
+      if (userErr) {
+        console.log('Hiba a felhasználó törlésénél:', userErr);
+        res.status(500).json({ error: 'Hiba a felhasználó törlése során' });
+        return;
+      }
+      
+      console.log('Felhasználó sikeresen törölve, ID:', userId);
+      res.json({ 
+        message: 'Felhasználó sikeresen törölve',
+        deletedRatings: ratingResult.affectedRows,
+        deletedUser: userResult.affectedRows
+      });
+    });
   });
 });
 

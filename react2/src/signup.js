@@ -34,6 +34,13 @@ export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [darkMode, setDarkMode] = useState(true);
   const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorTitle, setErrorTitle] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const dvdLogoRef = useRef({
     x: window.innerWidth * 0.1, 
@@ -126,11 +133,41 @@ export default function SignUpForm() {
     setShowConfirmPassword((prev) => !prev);
   const navigate = useNavigate();
      
+  const validateEmail = (email) => {
+    // Check if email contains exactly one @ symbol
+    const atSymbols = email.split('@').length - 1;
+    return atSymbols === 1;
+  };
+  
+  const validatePassword = (password) => {
+    // Check if password is at least 6 characters and contains at least one uppercase letter
+    return password.length >= 6 && /[A-Z]/.test(password);
+  };
+  
+  // Then modify the handleSubmit function:
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Email validation
+    if (!validateEmail(email)) {
+      setErrorTitle('Érvénytelen email cím');
+      setErrorMessage('Az email cím formátuma nem megfelelő. Pontosan egy @ jelet tartalmazhat.');
+      setShowErrorDialog(true);
+      return;
+    }
+    
+    // Password validation
+    if (!validatePassword(password)) {
+      setErrorTitle('Gyenge jelszó');
+      setErrorMessage('A jelszónak legalább 6 karakterből kell állnia és tartalmaznia kell legalább egy nagybetűt.');
+      setShowErrorDialog(true);
+      return;
+    }
+    
     if (password !== confirmPassword) {
-      alert('A jelszavak nem egyeznek!');
+      setErrorTitle('Jelszó hiba');
+      setErrorMessage('A jelszavak nem egyeznek!');
+      setShowErrorDialog(true);
       return;
     }
     
@@ -152,15 +189,49 @@ export default function SignUpForm() {
         setTimeout(() => {
           navigate('/kezdolap');
         }, 2000);
+      } else {
+        // Handle specific error cases with custom styling
+        if (data.error.includes('email már regisztrálva')) {
+          setErrorTitle('Email már használatban');
+          setErrorMessage('Ez az email cím már regisztrálva van a rendszerben. Kérjük, használj másik email címet vagy jelentkezz be.');
+        } else if (data.error.includes('felhasználónév már foglalt')) {
+          setErrorTitle('Felhasználónév foglalt');
+          setErrorMessage('Ez a felhasználónév már foglalt. Kérjük, válassz másik felhasználónevet.');
         } else {
-          alert(data.error || 'Regisztrációs hiba történt!');
+          setErrorTitle('Regisztrációs hiba');
+          setErrorMessage(data.error || 'Hiba történt a regisztráció során. Kérjük, próbáld újra később.');
         }
-        } catch (error) {
-          console.error('Registration error:', error);
-          alert('Hiba történt a regisztráció során. Kérjük, próbálja újra később.');
-        }
-        };
+        setShowErrorDialog(true);
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setErrorTitle('Szerver hiba');
+      setErrorMessage('Hiba történt a regisztráció során. Kérjük, próbáld újra később.');
+      setShowErrorDialog(true);
+    }
+  };
         
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    
+    if (!validateEmail(value) && value) {
+      setEmailError('Az email cím formátuma nem megfelelő');
+    } else {
+      setEmailError('');
+    }
+  };
+  
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    
+    if (value && !validatePassword(value)) {
+      setPasswordError('A jelszónak legalább 6 karakterből kell állnia és tartalmaznia kell legalább egy nagybetűt');
+    } else {
+      setPasswordError('');
+    }
+  };
         return (
           <div
             style={{
@@ -341,7 +412,9 @@ export default function SignUpForm() {
             fullWidth
             margin="normal"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
+            error={!!emailError}
+            helperText={emailError}
             InputProps={{
               style: { color: darkMode ? 'white' : 'black' },
             }}
@@ -355,17 +428,19 @@ export default function SignUpForm() {
             }}
           />
 
-          <TextField
-            label="Jelszó"
-            type={showPassword ? 'text' : 'password'}
-            variant="outlined"
-            name="password"
-            required
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
+            <TextField
+              label="Jelszó"
+              type={showPassword ? 'text' : 'password'}
+              variant="outlined"
+              name="password"
+              required
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={handlePasswordChange}
+              error={!!passwordError}
+              helperText={passwordError}
+              InputProps={{
               style: { color: darkMode ? 'white' : 'black' },
               endAdornment: password && (
                 <InputAdornment position="end">
@@ -594,6 +669,104 @@ export default function SignUpForm() {
   </Box>
 </Dialog>
 
+<Dialog
+  open={showErrorDialog}
+  onClose={() => setShowErrorDialog(false)}
+  sx={{
+    '& .MuiDialog-paper': {
+      backgroundColor: darkMode ? '#1E1E1E' : '#fff',
+      borderRadius: {
+        xs: '15px',
+        sm: '25px'
+      },
+      padding: {
+        xs: '1.5rem',
+        sm: '3rem'
+      },
+      minWidth: {
+        xs: '80%',
+        sm: '450px'
+      },
+      textAlign: 'center',
+      boxShadow: darkMode 
+        ? '0 8px 32px rgba(255,87,87,0.3)' 
+        : '0 8px 32px rgba(255,87,87,0.2)',
+      border: '2px solid',
+      borderColor: darkMode ? '#FF5757' : '#FF5757',
+      position: 'relative',
+      overflow: 'hidden'
+    }
+  }}
+>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '4px',
+      background: 'linear-gradient(90deg, #FF5757, #FF8A8A)',
+      animation: 'loadingBar 2s ease-in-out',
+      '@keyframes loadingBar': {
+        '0%': { width: '0%' },
+        '100%': { width: '100%' }
+      }
+    }}
+  />
+  <Box sx={{ position: 'relative' }}>    
+    <Typography 
+      variant="h4" 
+      sx={{ 
+        color: darkMode ? '#FF5757' : '#FF5757',
+        mb: 3,
+        fontWeight: 800,
+        letterSpacing: '1px',
+        textTransform: 'uppercase',
+        fontSize: {
+          xs: '1.2rem',
+          sm: '1.5rem',
+          md: '2rem'
+        },
+        padding: {
+          xs: '0.5rem',
+          sm: '1rem'
+        }
+      }}
+    >
+      {errorTitle}
+    </Typography>
+
+    <Typography 
+      variant="body1" 
+      sx={{ 
+        color: darkMode ? '#ccc' : '#555',
+        mb: 4,
+        fontWeight: 400,
+        lineHeight: 1.6
+      }}
+    >
+      {errorMessage}
+    </Typography>
+    
+    <Button
+      onClick={() => setShowErrorDialog(false)}
+      variant="contained"
+      sx={{
+        backgroundColor: darkMode ? '#FF5757' : '#FF5757',
+        color: 'white',
+        padding: '10px 24px',
+        borderRadius: '8px',
+        fontWeight: 600,
+        textTransform: 'none',
+        '&:hover': {
+          backgroundColor: darkMode ? '#FF8A8A' : '#FF8A8A',
+        }
+      }}
+    >
+      Értettem
+    </Button>
+  </Box>
+</Dialog>
 
     </div>
     

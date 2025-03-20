@@ -182,18 +182,29 @@ export default function Fiokom() {
         <Menu sideMenuActive={sideMenuActive} toggleSideMenu={toggleSideMenu} />
       </Box>
 
-      <FormGroup sx={{ position: 'absolute', top: 60, right: 0, zIndex: 1 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={darkMode}
-              onChange={() => setDarkMode(!darkMode)}
-              color="primary"
-            />
-          }
-          label={<Typography sx={{ color: darkMode ? 'white' : 'black' }}>Dark Mode</Typography>}
-        />
-      </FormGroup>
+       <FormGroup
+              sx={{
+                position: 'absolute',
+                top: 60,
+                right: 20,
+                zIndex: 1100
+              }}
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    color="default"
+                    sx={{
+                      color: darkMode ? 'white' : 'black',
+                    }}
+                    checked={darkMode}
+                    onChange={() => setDarkMode((prev) => !prev)}
+                  />
+                }
+                label="Dark Mode"
+                sx={{ color: darkMode ? 'white' : 'black' }}
+              />
+            </FormGroup>
 
       <Container maxWidth="lg" sx={{ 
         mt: 8,

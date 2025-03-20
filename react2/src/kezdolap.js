@@ -18,9 +18,6 @@ import {
   Dialog,
   CardContent,
   Badge
-  
- 
- 
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -35,130 +32,31 @@ import Footer from './footer';
 import Menu from './menu2';
 import { useInView } from 'react-intersection-observer';
 import { Rating } from '@mui/material';
-
-
-
-
-
 import { useNavigate } from 'react-router-dom';
-  const Home = () => {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [sideMenuActive, setSideMenuActive] = useState(false);
-    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 0);
-    const [darkMode, setDarkMode] = useState(true);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [open, setOpen] = useState(false);
-    const anchorRef = useRef(null);
-    const navigate = useNavigate();
-    const [userName, setUserName] = useState('');
-    const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
-    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-    const [wonPrize, setWonPrize] = useState('')
-    const [spinComplete, setSpinComplete] = useState(false);
-    const [showLogoutAlert, setShowLogoutAlert] = useState(false);
-    const [ratings, setRatings] = useState([]);
-    const scrollbarRef = useRef(null);
-    const contentRef = useRef(null);
 
-    useEffect(() => {
-      const scrollbar = scrollbarRef.current;
-      const content = contentRef.current;
-    
-      const handleScroll = () => {
-        const scrollPercentage = scrollbar.scrollLeft / (scrollbar.scrollWidth - scrollbar.clientWidth);
-        const scrollAmount = (content.scrollWidth - content.clientWidth) * scrollPercentage;
-        content.scrollLeft = scrollAmount;
-      };
-    
-      if (scrollbar && content) {
-        scrollbar.addEventListener('scroll', handleScroll);
-        return () => scrollbar.removeEventListener('scroll', handleScroll);
-      }
-    }, []);
-    
-    
-    useEffect(() => {
-      const fetchRatings = async () => {
-        try {
-          const response = await fetch('http://localhost:5000/get-all-ratings');
-          const data = await response.json();
-          console.log('Fetched ratings:', data);
-          setRatings(data || []);
-        } catch (error) {
-          console.error('Error fetching ratings:', error);
-        }
-      };
-      
-      fetchRatings();
-    }, []);
+// Define prizes outside both components so it's accessible
+const prizes = [
+  { option: 'Nincs nyeremény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
+  { option: '10% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }},
+  { option: '5% kedvezmény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
+  { option: '25% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }},
+  { option: '20% kedvezmény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
+  { option: '15% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }}
+];
 
-    const [ref, inView] = useInView({
-      threshold: 0.2,
-      triggerOnce: true
-    });
+const CouponAlert = ({ 
+  open, 
+  onClose, 
+  darkMode, 
+  onPrizeWon,  // Győződj meg róla, hogy ez a prop szerepel a paraméterlistában
+  setWonPrize,
+  setShowWelcomeDialog,
+  setShowSuccessAlert,
+  saveCouponToDatabase
+}) => {
+  const [currentPrize, setCurrentPrize] = useState('');
+  const [isSpinning, setIsSpinning] = useState(false);
 
-
-    const [initialPosition, setInitialPosition] = useState({
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)'
-    });
-
-    useEffect(() => {
-      const updatePosition = () => {
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
-        
-        setInitialPosition({
-          top: `${viewportHeight / 2}px`,
-          left: `${viewportWidth / 2}px`,
-          transform: 'translate(-50%, -50%)'
-        });
-      };
-    
-      updatePosition();
-      window.addEventListener('resize', updatePosition);
-    
-      return () => window.removeEventListener('resize', updatePosition);
-    }, []);
-    
-    
-
-    const prizes = [
-      { option: 'Nincs nyeremény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
-      { option: '10% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }},
-      { option: '5% kedvezmény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
-      { option: '25% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }},
-      { option: '20% kedvezmény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
-      { option: '15% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }}
-    ];
-    
-    const saveCouponToDatabase = async (coupon) => {
-      const userData = JSON.parse(localStorage.getItem('user'));
-      try {
-        const response = await fetch('http://localhost:4000/update-coupon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: userData.email,
-            coupon: coupon
-          })
-        });
-        if (response.ok) {
-          userData.kupon = coupon;
-          localStorage.setItem('user', JSON.stringify(userData));
-        }
-      } catch (error) {
-        console.error('Kupon mentési hiba:', error);
-      }
-    };
-    
-    const CouponAlert = ({ open, onClose, darkMode }) => {
-      const [currentPrize, setCurrentPrize] = useState('');
-      const [isSpinning, setIsSpinning] = useState(false);
-  ;
-    
   const spinCoupon = () => {
     setIsSpinning(true);
     let spins = 0;
@@ -172,258 +70,532 @@ import { useNavigate } from 'react-router-dom';
         clearInterval(interval);
         const finalPrize = prizes[Math.floor(Math.random() * prizes.length)].option;
         
-    
         const user = JSON.parse(localStorage.getItem('user'));
-        user.hasWonPrize = true;
-        user.hasSpun = true;
-        user.kupon = finalPrize;
-        delete user.isNewRegistration;
-        localStorage.setItem('user', JSON.stringify(user));
-  
+        if (user) {
+          user.hasWonPrize = true;
+          user.hasSpun = true;
+          user.kupon = finalPrize;
+          delete user.isNewRegistration;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+
         setCurrentPrize(finalPrize);
-        setWonPrize(finalPrize);
-        setShowWelcomeDialog(false);
         
         setTimeout(() => {
           setIsSpinning(false);
-          setTimeout(() => {
-            saveCouponToDatabase(finalPrize);
-            setShowSuccessAlert(true);
-            onClose();
-          }, 800);
-        }, 10);
+          
+          // Értesítsük a szülő komponenst a nyereményről
+          if (typeof onPrizeWon === 'function') {
+            onPrizeWon(finalPrize);
+          } else {
+            // Ha nincs onPrizeWon, akkor használjuk a régi módszert
+            setWonPrize && setWonPrize(finalPrize);
+            setShowWelcomeDialog && setShowWelcomeDialog(false);
+            setTimeout(() => {
+              saveCouponToDatabase && saveCouponToDatabase(finalPrize);
+              setShowSuccessAlert && setShowSuccessAlert(true);
+            }, 800);
+          }
+          
+          onClose();
+        }, 500);
       }
     }, 100);
   };
-      return (
-        <Dialog
-          open={open}
-          sx={{
-            '& .MuiDialog-paper': {
-              backgroundColor: darkMode ? '#1E1E1E' : '#fff',
-              borderRadius: '25px',
-              padding: '3rem',
-              minWidth: '450px',
-              textAlign: 'center',
-              animation: 'fadeIn 0.3s ease-out',
-              '@keyframes fadeIn': {
-                from: { opacity: 0, transform: 'translateY(-20px)' },
-                to: { opacity: 1, transform: 'translateY(0)' }
-              }
-            }
-          }}
-        >
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              color: '#60BA97', 
-              mb: 3,
-              animation: 'slideDown 0.5s ease-out',
-              '@keyframes slideDown': {
-                from: { opacity: 0, transform: 'translateY(-20px)' },
-                to: { opacity: 1, transform: 'translateY(0)' }
-              }
-            }}
-          >
-            Nyerj Kedvezményt!
-          </Typography>
-          
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              color: darkMode ? '#fff' : '#333', 
-              mb: 4,
-              transition: 'all 0.3s ease',
-              transform: isSpinning ? 'scale(1.1)' : 'scale(1)',
-              animation: isSpinning ? 'pulse 0.5s infinite alternate' : 'none',
-              '@keyframes pulse': {
-                from: { opacity: 0.8, transform: 'scale(1)' },
-                to: { opacity: 1, transform: 'scale(1.1)' }
-              }
-            }}
-          >
-            {isSpinning ? currentPrize : 'Kattints a sorsoláshoz!'}
-          </Typography>
+
+  return (
+    <Dialog
+      open={open}
+      sx={{
+        '& .MuiDialog-paper': {
+          backgroundColor: darkMode ? '#1E1E1E' : '#fff',
+          borderRadius: '25px',
+          padding: '3rem',
+          minWidth: '450px',
+          textAlign: 'center',
+          animation: 'fadeIn 0.3s ease-out',
+          '@keyframes fadeIn': {
+            from: { opacity: 0, transform: 'translateY(-20px)' },
+            to: { opacity: 1, transform: 'translateY(0)' }
+          }
+        }
+      }}
+    >
+      <Typography 
+        variant="h4" 
+        sx={{ 
+          color: '#60BA97', 
+          mb: 3,
+          animation: 'slideDown 0.5s ease-out',
+          '@keyframes slideDown': {
+            from: { opacity: 0, transform: 'translateY(-20px)' },
+            to: { opacity: 1, transform: 'translateY(0)' }
+          }
+        }}
+      >
+        Nyerj Kedvezményt!
+      </Typography>
+      
+      <Typography 
+        variant="h5" 
+        sx={{ 
+          color: darkMode ? '#fff' : '#333', 
+          mb: 4,
+          transition: 'all 0.3s ease',
+          transform: isSpinning ? 'scale(1.1)' : 'scale(1)',
+          animation: isSpinning ? 'pulse 0.5s infinite alternate' : 'none',
+          '@keyframes pulse': {
+            from: { opacity: 0.8, transform: 'scale(1)' },
+            to: { opacity: 1, transform: 'scale(1.1)' }
+          }
+        }}
+      >
+        {isSpinning ? currentPrize : 'Kattints a sorsoláshoz!'}
+      </Typography>
+
+      <Button
+        onClick={spinCoupon}
+        disabled={isSpinning}
+        sx={{
+          background: 'linear-gradient(45deg, #60BA97, #4e9d7e)',
+          padding: '15px 40px',
+          color: '#fff',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'scale(1.05)',
+            boxShadow: '0 6px 20px rgba(96,186,151,0.4)'
+          },
+          '&:disabled': {
+            background: 'linear-gradient(45deg, #60BA97, #4e9d7e)',
+            opacity: 0.7
+          }
+        }}
+      >
+        {isSpinning ? 'Sorsolás...' : 'Sorsol'}
+      </Button>
+      <IconButton
+        onClick={onClose}
+        sx={{
+          position: 'absolute',
+          top: 10,
+          right: 10,
+          color: darkMode ? '#60BA97' : '#4e9d7e',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            transform: 'rotate(90deg)',
+            color: '#60BA97'
+          }
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
+    </Dialog>
+  );
+};
+
+const Home = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [sideMenuActive, setSideMenuActive] = useState(false);
+  const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+  const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 0);
+  const [darkMode, setDarkMode] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
+  const navigate = useNavigate();
+  const [userName, setUserName] = useState('');
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [wonPrize, setWonPrize] = useState('');
+  const [spinComplete, setSpinComplete] = useState(false);
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
+  const [ratings, setRatings] = useState([]);
+  const scrollbarRef = useRef(null);
+  const contentRef = useRef(null);
+  const [animationStates, setAnimationStates] = useState({});
+
+  const startAnimation = (elementId, animationName, duration = 1000) => {
+    const element = document.getElementById(elementId);
+    if (!element) return;
     
-          <Button
-            onClick={spinCoupon}
-            disabled={isSpinning}
-            sx={{
-              background: 'linear-gradient(45deg, #60BA97, #4e9d7e)',
-              padding: '15px 40px',
-              color: '#fff',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: '0 6px 20px rgba(96,186,151,0.4)'
-              },
-              '&:disabled': {
-                background: 'linear-gradient(45deg, #60BA97, #4e9d7e)',
-                opacity: 0.7
-              }
-            }}
-          >
-            {isSpinning ? 'Sorsolás...' : 'Sorsol'}
-          </Button>
-          <IconButton
-            onClick={onClose}
-            sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              color: darkMode ? '#60BA97' : '#4e9d7e',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                transform: 'rotate(90deg)',
-                color: '#60BA97'
-              }
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Dialog>
-      );
+    // Animáció állapotának beállítása
+    setAnimationStates(prev => ({
+      ...prev,
+      [elementId]: true
+    }));
+    
+    // Animáció tisztítása és újraindítása
+    element.style.animation = 'none';
+    void element.offsetWidth; // Force reflow
+    element.style.animation = `${animationName} ${duration}ms`;
+    
+    // Animáció befejezése után állapot visszaállítása
+    setTimeout(() => {
+      setAnimationStates(prev => ({
+        ...prev,
+        [elementId]: false
+      }));
+    }, duration);
+  };
+
+  // Animációk újraindítása
+  const resetAllAnimations = () => {
+    // Minden animált elem azonosítója
+    const animatedElements = ['slideImage', 'slideText', 'slideButton'];
+    
+    animatedElements.forEach(elementId => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.style.animation = 'none';
+        void element.offsetWidth; // Force reflow
+      }
+    });
+    
+    // Animációs állapotok visszaállítása
+    setAnimationStates({});
+    setIsAnimating(false);
+  };
+
+  // Időszakos animáció-újraindítás
+  useEffect(() => {
+    // 10 percenként újraindítjuk az animációkat
+    const resetInterval = setInterval(() => {
+      resetAllAnimations();
+    }, 10 * 60 * 1000);
+    
+    return () => clearInterval(resetInterval);
+  }, []);
+
+  useEffect(() => {
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let rafId;
+    
+    const checkPerformance = () => {
+      const now = performance.now();
+      const delta = now - lastTime;
+      frameCount++;
+      
+      if (delta >= 1000) {
+        const fps = Math.round((frameCount * 1000) / delta);
+        
+        // Ha az FPS túl alacsony, egyszerűsítsük az animációkat
+        if (fps < 30) {
+          // Egyszerűsített animációk bekapcsolása
+          document.body.classList.add('reduced-animations');
+        } else {
+          document.body.classList.remove('reduced-animations');
+        }
+        
+        frameCount = 0;
+        lastTime = now;
+      }
+      
+      rafId = requestAnimationFrame(checkPerformance);
     };
-    useEffect(() => {
+    
+    rafId = requestAnimationFrame(checkPerformance);
+    
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const handlePrizeWon = (prize) => {
+    console.log("Nyeremény megkapva:", prize);
+    setWonPrize(prize);
+    setShowWelcomeDialog(false);
+    
+    // Késleltetés után mutassuk az eredményt
+    setTimeout(() => {
+      saveCouponToDatabase(prize);
+      setShowSuccessAlert(true);
+    }, 800);
+  };
+  
+
+  // A Home komponensben:
+useEffect(() => {
+  console.log("showSuccessAlert állapot változott:", showSuccessAlert);
+  console.log("wonPrize állapot:", wonPrize);
+}, [showSuccessAlert, wonPrize]);
+
+
+  const [dialogAnimationState, setDialogAnimationState] = useState({
+    welcomeDialog: false,
+    successAlert: false,
+    logoutAlert: false
+  });
+
+  // Dialógus megjelenítése animációval
+  const showDialog = (dialogType) => {
+    // Először állítsuk be az animáció kezdeti állapotát
+    requestAnimationFrame(() => {
+      setDialogAnimationState(prev => ({
+        ...prev,
+        [dialogType]: true
+      }));
+    });
+  };
+
+  // Dialógus elrejtése animációval
+  const hideDialog = (dialogType) => {
+    // Animáció befejezése után rejtsük el a dialógust
+    const dialogElement = document.querySelector(`.${dialogType}-dialog`);
+    if (dialogElement) {
+      dialogElement.style.animation = 'fadeOut 0.3s forwards';
+      
+      setTimeout(() => {
+        setDialogAnimationState(prev => ({
+          ...prev,
+          [dialogType]: false
+        }));
+      }, 300);
+    } else {
+      // Ha nincs DOM elem, egyszerűen rejtsük el
+      setDialogAnimationState(prev => ({
+        ...prev,
+        [dialogType]: false
+      }));
+    }
+  };
+
+  useEffect(() => {
+    const scrollbar = scrollbarRef.current;
+    const content = contentRef.current;
+  
+    const handleScroll = () => {
+      const scrollPercentage = scrollbar.scrollLeft / (scrollbar.scrollWidth - scrollbar.clientWidth);
+      const scrollAmount = (content.scrollWidth - content.clientWidth) * scrollPercentage;
+      content.scrollLeft = scrollAmount;
+    };
+  
+    if (scrollbar && content) {
+      scrollbar.addEventListener('scroll', handleScroll);
+      return () => scrollbar.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+  
+  
+  useEffect(() => {
+    const fetchRatings = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/get-all-ratings');
+        const data = await response.json();
+        console.log('Fetched ratings:', data);
+        setRatings(data || []);
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+      }
+    };
+    
+    fetchRatings();
+  }, []);
+
+  const [ref, inView] = useInView({
+    threshold: 0.2,
+    triggerOnce: true
+  });
+
+  const [initialPosition, setInitialPosition] = useState({
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)'
+  });
+
+  useEffect(() => {
+    const updatePosition = () => {
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      setInitialPosition({
+        top: `${viewportHeight / 2}px`,
+        left: `${viewportWidth / 2}px`,
+        transform: 'translate(-50%, -50%)'
+      });
+    };
+  
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+  
+    return () => window.removeEventListener('resize', updatePosition);
+  }, []);
+  
+  const saveCouponToDatabase = async (coupon) => {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    try {
+      const response = await fetch('http://localhost:4000/update-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userData.email,
+          coupon: coupon
+        })
+      });
+      if (response.ok) {
+        userData.kupon = coupon;
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+    } catch (error) {
+      console.error('Kupon mentési hiba:', error);
+    }
+  };
+  
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.isNewRegistration && !user.hasSpun) {
+        setShowWelcomeDialog(true);
+      }
+    }
+  }, []);
+
+  const handleSpinComplete = (prize) => {
+    setSpinComplete(true);
+    setShowWelcomeDialog(false);
+    const user = JSON.parse(localStorage.getItem('user'));
+    user.hasWonPrize = true;
+    delete user.isNewRegistration;
+    localStorage.setItem('user', JSON.stringify(user));
+  };
+
+  const images = [
+    {
+      img: polok,
+      title: "Friss kollekció érkezett!",
+      subtitle: "Dobd fel a szettjeid a legújabb kollekcióval! Ne maradj le róluk.",
+      imageStyle: {}
+    },
+    {
+      img: gatyak,
+      title: "Téli nadrágok",
+      subtitle: "Leghidegebb napokon is melegen tart!",
+      imageStyle: { transform: 'translateY(-50px)' }
+    },
+    {
+      img: pulcsik,
+      title: "Kényelmes pullover",
+      subtitle: "Ez a pullover minden alkalomra tökéletes, egyedi design. Csapj le rájuk, amíg van készleten!",
+      imageStyle: {}
+    }
+  ];
+
+  const styles = {
+    root: {
+      overflowX: 'hidden', 
+      width: '100%',
+      position: 'relative'
+    }
+  };
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const handleClose = (event = {}) => {
+    if (event.target && anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+    setOpen(false);
+  };
+
+  const handleListKeyDown = (event) => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      setOpen(false);
+    } else if (event.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setShowLogoutAlert(true);
+    setOpen(false);
+  };
+  
+  const confirmLogout = () => {
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    setShowLogoutAlert(false);
+    navigate('/sign');
+  };
+
+  const toggleSideMenu = () => {
+    setSideMenuActive((prev) => !prev);
+  };
+
+  const handleCartClick = () => {
+    navigate('/kosar');
+  };
+
+  useEffect(() => {
+    images.forEach(image => {
+      const img = new Image();
+      img.src = image.img;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (sideMenuActive) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [sideMenuActive]);
+
+  useEffect(() => {
+    const checkLoginStatus = () => {
       const userData = localStorage.getItem('user');
       if (userData) {
         const user = JSON.parse(userData);
-        if (user.isNewRegistration && !user.hasSpun) {
-          setShowWelcomeDialog(true);
+        setIsLoggedIn(true);
+        setUserName(user.username || user.felhasznalonev || 'Felhasználó');
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    // Csak akkor indítsuk el az időzítőt, ha nem animálunk éppen
+    if (!isAnimating) {
+      const timer = setTimeout(() => {
+        setIsAnimating(true);
+        console.log("Animáció indítása, jelenlegi kép:", currentImageIndex);
+  
+        const imageElement = document.getElementById('slideImage');
+        const textElement = document.getElementById('slideText');
+  
+        if (imageElement && textElement) {
+          // Kimenő animáció
+          imageElement.style.animation = 'slideOutLeft 1.5s ease-in-out';
+          textElement.style.animation = 'slideOutRight 1.5s ease-in-out';
+          
+          // Várjunk, amíg a kimenő animáció befejeződik
+          setTimeout(() => {
+            // A képváltás logikája
+            const nextIndex = currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1;
+            console.log("Képváltás:", currentImageIndex, "->", nextIndex);
+            setCurrentImageIndex(nextIndex);
+            
+            // Bejövő animáció
+            imageElement.style.animation = 'slideInLeft 1.5s ease-in-out';
+            textElement.style.animation = 'slideInRight 1.5s ease-in-out';
+            
+            // Várjunk, amíg a bejövő animáció befejeződik
+            setTimeout(() => {
+              setIsAnimating(false);
+              console.log("Animáció befejezve, új kép:", nextIndex);
+            }, 1500);
+          }, 1500);
         }
-      }
-    }, []);
-    const handleSpinComplete = (prize) => {
-      setSpinComplete(true);
-      setShowWelcomeDialog(false);
-      const user = JSON.parse(localStorage.getItem('user'));
-      user.hasWonPrize = true;
-      delete user.isNewRegistration;
-      localStorage.setItem('user', JSON.stringify(user));
-    };
-    const images = [
-      {
-        img: polok,
-        title: "Friss kollekció érkezett!",
-        subtitle: "Dobd fel a szettjeid a legújabb kollekcióval! Ne maradj le róluk.",
-        imageStyle: {}
-      },
-      {
-        img: gatyak,
-        title: "Téli nadrágok",
-        subtitle: "Leghidegebb napokon is melegen tart!",
-        imageStyle: { transform: 'translateY(-50px)' }
-      },
-      {
-        img: pulcsik,
-        title: "Kényelmes pullover",
-        subtitle: "Ez a pullover minden alkalomra tökéletes, egyedi design. Csapj le rájuk, amíg van készleten!",
-        imageStyle: {}
-      }
-    ];
-
-    const styles = {
-      root: {
-        overflowX: 'hidden', 
-        width: '100%',
-        position: 'relative'
-      }
-    };
-
-    const handleToggle = () => {
-      setOpen((prevOpen) => !prevOpen);
-    };
-
-    const handleClose = (event = {}) => {
-      if (event.target && anchorRef.current && anchorRef.current.contains(event.target)) {
-        return;
-      }
-      setOpen(false);
-    };
-
-    const handleListKeyDown = (event) => {
-      if (event.key === 'Tab') {
-        event.preventDefault();
-        setOpen(false);
-      } else if (event.key === 'Escape') {
-        setOpen(false);
-      }
-    };
-
-    const handleLogout = () => {
-      setShowLogoutAlert(true);
-      setOpen(false);
-    };
-    
-    const confirmLogout = () => {
-      localStorage.removeItem('user');
-      setIsLoggedIn(false);
-      setShowLogoutAlert(false);
-      navigate('/sign');
-    };
-
-    const toggleSideMenu = () => {
-      setSideMenuActive((prev) => !prev);
-    };
-
-    const handleCartClick = () => {
-      navigate('/kosar');
-    };
-
-    useEffect(() => {
-      images.forEach(image => {
-        const img = new Image();
-        img.src = image.img;
-      });
-    }, []);
-
-    useEffect(() => {
-      if (sideMenuActive) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = 'auto';
-      }
-    }, [sideMenuActive]);
-
-    useEffect(() => {
-      const checkLoginStatus = () => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          const user = JSON.parse(userData);
-          setIsLoggedIn(true);
-          setUserName(user.username || user.felhasznalonev || 'Felhasználó');
-        }
-      };
-      checkLoginStatus();
-    }, []);
-      const [isAnimating, setIsAnimating] = useState(false);
-      useEffect(() => {
-        const timer = setInterval(() => {
-          if (!isAnimating) {
-            setIsAnimating(true);
+      }, 4500);
       
-            const imageElement = document.getElementById('slideImage');
-            const textElement = document.getElementById('slideText');
-      
-            if (imageElement && textElement) {
-              imageElement.style.animation = 'slideOutLeft 1.5s ease-in-out';
-              textElement.style.animation = 'slideOutRight 1.5s ease-in-out';
-              setTimeout(() => {
-                setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
-                requestAnimationFrame(() => {
-                  imageElement.style.animation = 'slideInLeft 1.5s ease-in-out';
-                  textElement.style.animation = 'slideInRight 1.5s ease-in-out';
-                  setTimeout(() => {
-                    setIsAnimating(false);
-                  }, 1500);
-                });
-              }, 1500);
-            }
-          }
-        }, 4500);
-        
-        return () => clearInterval(timer);
-      }, [isAnimating]);
+      return () => clearTimeout(timer);
+    }
+  }, [currentImageIndex, isAnimating, images.length]);
 
     return (
       <div style={{
@@ -658,76 +830,54 @@ import { useNavigate } from 'react-router-dom';
   }
 }}>
   <Button
-    component={Link}
-    to="/sign"
-    sx={{
-      color: '#fff',
-      border: '1px solid #fff',
-      borderRadius: '5px',
-      padding: {
-        xs: '2px 6px',  
-        sm: '4px 9px',    
-        md: '5px 10px'   
-      },
-      fontSize: {
-        xs: '0.65rem',    
-        sm: '0.85rem',   
-        md: '0.875rem'  
-      },
-      margin: {
-        xs: '0 2px',
-        sm: '0 7px',      
-        md: '0 10px'      
-      },
-      minWidth: {
-        xs: '50px',       
-        sm: '80px',       
-        md: '90px'        
-      },
-      '&:hover': {
-        backgroundColor: '#fff',
-        color: '#333',
-      },
-    }}
-  >
-    Sign In
-  </Button>
+                  component={Link}
+                  to="/sign"
+                  sx={{
+                    color: '#fff',
+                    border: '1px solid #fff',
+                    borderRadius: '5px',
+                    padding: {
+                      xs: '2px 6px',   
+                      sm: '5px 10px'
+                    },
+                    fontSize: {
+                      xs: '0.7rem',   
+                      sm: '1rem'
+                    },
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                      backgroundColor: '#fff',
+                      color: '#333',
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
 
-  <Button
-    component={Link}
-    to="/signup"
-    sx={{
-      color: '#fff',
-      border: '1px solid #fff',
-      borderRadius: '5px',
-      padding: {
-        xs: '2px 6px',    
-        sm: '4px 9px',   
-        md: '5px 10px'    
-      },
-      fontSize: {
-        xs: '0.65rem',    
-        sm: '0.85rem',    
-        md: '0.875rem'    
-      },
-      margin: {
-        xs: '0 2px',     
-        sm: '0 7px',      
-        md: '0 10px'     
-      },
-      minWidth: {
-        xs: '50px',       
-        sm: '80px',       
-        md: '90px'        
-      },
-      '&:hover': {
-        backgroundColor: '#fff',
-        color: '#333',
-      },
-    }}
-  >
-    Sign Up
-  </Button>
+                <Button
+                  component={Link}
+                  to="/signup"
+                  sx={{
+                    color: '#fff',
+                    border: '1px solid #fff',
+                    borderRadius: '5px',
+                    padding: {
+                      xs: '2px 6px',  
+                      sm: '5px 10px'
+                    },
+                    fontSize: {
+                      xs: '0.7rem',    
+                      sm: '1rem'
+                    },
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                      backgroundColor: '#fff',
+                      color: '#333',
+                    },
+                  }}
+                >
+                  Sign Up
+                </Button>
 </Box>
               </>
             )}
@@ -1219,41 +1369,41 @@ import { useNavigate } from 'react-router-dom';
     boxShadow: darkMode ? '0 0 15px rgba(255, 255, 255, 0.1)' : '0 0 15px rgba(0, 0, 0, 0.1)'
   }}
 >
-    <Box
-      id="slideImage"
-      component="img"
-      src={images[currentImageIndex].img}
-      sx={{
-        height: {
-          xs: '250px',
-          sm: '350px',
-          md: '450px',
-          lg: '550px'
-        },
-        width: {
-          xs: '250px',
-          sm: '350px',
-          md: '450px',
-          lg: '550px'
-        },
-        objectFit: 'cover',
-        flex: '0 0 auto',
-        position: 'relative',
-        left: {
-          xs: '0',
-          md: '50px'
-        },
-        marginRight: {
-          xs: '0',
-          md: '50px'
-        },
-        marginBottom: {
-          xs: '20px',
-          md: '0'
-        },
-        ...images[currentImageIndex].imageStyle
-      }}
-    />
+<Box
+  id="slideImage"
+  component="img"
+  src={images[currentImageIndex].img}
+  sx={{
+    height: {
+      xs: '250px',
+      sm: '350px',
+      md: '450px',
+      lg: '550px'
+    },
+    width: {
+      xs: '250px',
+      sm: '350px',
+      md: '450px',
+      lg: '550px'
+    },
+    objectFit: 'cover',
+    flex: '0 0 auto',
+    position: 'relative',
+    left: {
+      xs: '0',
+      md: '50px'
+    },
+    marginRight: {
+      xs: '0',
+      md: '50px'
+    },
+    marginBottom: {
+      xs: '20px',
+      md: '0'
+    },
+    ...images[currentImageIndex].imageStyle
+  }}
+/>
     <Box
       id="slideText"
       sx={{
@@ -1329,6 +1479,31 @@ import { useNavigate } from 'react-router-dom';
         opacity: 0;
       }
     }
+       .reduced-animations * {
+    transition-duration: 0.1s !important;
+    animation-duration: 0.1s !important;
+  }
+  
+  /* Hardveres gyorsítás */
+  .animated-element {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  /* Animáció kikapcsolása, ha a felhasználó preferálja */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001s !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+  
+  /* Animációk tisztítása */
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
     @keyframes slideInRight {
       from {
         transform: translateX(100%);
@@ -1536,95 +1711,50 @@ import { useNavigate } from 'react-router-dom';
     </Card>
   </Box>
 )}
-<CouponAlert
-  open={showWelcomeDialog}
-  onClose={() => setShowWelcomeDialog(false)}
-  darkMode={darkMode}
-/>
-<Dialog
-  open={showSuccessAlert}
-  onClose={() => setShowSuccessAlert(false)}
-  sx={{
-    '& .MuiDialog-paper': {
-      backgroundColor: darkMode ? '#1E1E1E' : '#fff',
-      borderRadius: {
-        xs: '15px',   
-        sm: '25px'    
-      },
-      padding: {
-        xs: '1.5rem',  
-        sm: '2rem'    
-      },
-      minWidth: {
-        xs: '85%',     
-        sm: '350px',   
-        md: '400px'   
-      },
-      maxWidth: {
-        xs: '95%',     
-        sm: '450px'
-      },
-      textAlign: 'center',
-      animation: 'popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-      '@keyframes popIn': {
-        '0%': { transform: 'scale(0.8)', opacity: 0 },
-        '100%': { transform: 'scale(1)', opacity: 1 }
-      }
-    }
-  }}
->
-  <Typography 
-    variant="h5" 
-    sx={{ 
-      color: '#60BA97', 
-      mb: 2,
-      fontSize: {
-        xs: '1.2rem', 
-        sm: '1.5rem'   
-      }
-    }}
-  >
-    Gratulálunk!
-  </Typography>
-  <Typography 
-    variant="body1" 
-    sx={{ 
-      color: darkMode ? '#fff' : '#333', 
-      mb: 3,
-      fontSize: {
-        xs: '0.9rem', 
-        sm: '1rem'    
-      }
-    }}
-  >
-    Nyereményed: {wonPrize}
-  </Typography>
-  <Button
-    onClick={() => setShowSuccessAlert(false)}
-    sx={{
-      background: 'linear-gradient(45deg, #60BA97, #4e9d7e)',
-      color: '#fff',
-      padding: {
-        xs: '6px 16px', 
-        sm: '8px 22px'  
-      },
-      fontSize: {
-        xs: '0.85rem',   
-        sm: '0.9rem'    
-      },
-      '&:hover': { transform: 'scale(1.05)' }
-    }}
-  >
-    Rendben
-  </Button>
-</Dialog>
 
 <CouponAlert 
-  open={showWelcomeDialog} 
-  onClose={() => setShowWelcomeDialog(false)}
-  darkMode={darkMode}
-  onSpinComplete={handleSpinComplete}
-/>
+        open={showWelcomeDialog} 
+        onClose={() => setShowWelcomeDialog(false)}
+        darkMode={darkMode}
+        onPrizeWon={handlePrizeWon}  // Adjuk át a callback-et
+        setWonPrize={setWonPrize}
+        setShowWelcomeDialog={setShowWelcomeDialog}
+        setShowSuccessAlert={setShowSuccessAlert}
+        saveCouponToDatabase={saveCouponToDatabase}
+      />
+      
+      <Dialog
+        open={showSuccessAlert}
+        onClose={() => setShowSuccessAlert(false)}
+        sx={{
+          '& .MuiDialog-paper': {
+            backgroundColor: darkMode ? '#1E1E1E' : '#fff',
+            borderRadius: '25px',
+            padding: '2rem',
+            minWidth: '350px',
+            textAlign: 'center'
+          }
+        }}
+      >
+        <Typography variant="h5" sx={{ color: '#60BA97', mb: 2 }}>
+          Gratulálunk!
+        </Typography>
+        <Typography variant="body1" sx={{ color: darkMode ? '#fff' : '#333', mb: 3 }}>
+          Nyereményed: {wonPrize}
+        </Typography>
+        <Button
+          onClick={() => setShowSuccessAlert(false)}
+          sx={{
+            background: 'linear-gradient(45deg, #60BA97, #4e9d7e)',
+            color: '#fff',
+            padding: '8px 22px',
+            '&:hover': { transform: 'scale(1.05)' }
+          }}
+        >
+          Rendben
+        </Button>
+      </Dialog>
+
 <Typography 
   variant="h4" 
   sx={{

@@ -392,76 +392,54 @@ const AboutUs = () => {
   }
 }}>
   <Button
-    component={Link}
-    to="/sign"
-    sx={{
-      color: '#fff',
-      border: '1px solid #fff',
-      borderRadius: '5px',
-      padding: {
-        xs: '2px 6px',    // Telefonos nézetben még kisebb padding
-        sm: '4px 9px',    // Tablet nézeten közepes padding
-        md: '5px 10px'    // Asztali nézeten eredeti padding
-      },
-      fontSize: {
-        xs: '0.65rem',    // Telefonos nézetben még kisebb betűméret
-        sm: '0.85rem',    // Tablet nézeten közepes betűméret
-        md: '0.875rem'    // Asztali nézeten eredeti betűméret
-      },
-      margin: {
-        xs: '0 2px',      // Telefonos nézetben még kisebb margó
-        sm: '0 7px',      // Tablet nézeten közepes margó
-        md: '0 10px'      // Asztali nézeten nagyobb margó
-      },
-      minWidth: {
-        xs: '50px',       // Telefonos nézetben még kisebb minimum szélesség
-        sm: '80px',       // Tablet nézeten közepes minimum szélesség
-        md: '90px'        // Asztali nézeten nagyobb minimum szélesség
-      },
-      '&:hover': {
-        backgroundColor: '#fff',
-        color: '#333',
-      },
-    }}
-  >
-    Sign In
-  </Button>
+                  component={Link}
+                  to="/sign"
+                  sx={{
+                    color: '#fff',
+                    border: '1px solid #fff',
+                    borderRadius: '5px',
+                    padding: {
+                      xs: '2px 6px',   
+                      sm: '5px 10px'
+                    },
+                    fontSize: {
+                      xs: '0.7rem',   
+                      sm: '1rem'
+                    },
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                      backgroundColor: '#fff',
+                      color: '#333',
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
 
-  <Button
-    component={Link}
-    to="/signup"
-    sx={{
-      color: '#fff',
-      border: '1px solid #fff',
-      borderRadius: '5px',
-      padding: {
-        xs: '2px 6px',    // Telefonos nézetben még kisebb padding
-        sm: '4px 9px',    // Tablet nézeten közepes padding
-        md: '5px 10px'    // Asztali nézeten eredeti padding
-      },
-      fontSize: {
-        xs: '0.65rem',    // Telefonos nézetben még kisebb betűméret
-        sm: '0.85rem',    // Tablet nézeten közepes betűméret
-        md: '0.875rem'    // Asztali nézeten eredeti betűméret
-      },
-      margin: {
-        xs: '0 2px',      // Telefonos nézetben még kisebb margó
-        sm: '0 7px',      // Tablet nézeten közepes margó
-        md: '0 10px'      // Asztali nézeten nagyobb margó
-      },
-      minWidth: {
-        xs: '50px',       // Telefonos nézetben még kisebb minimum szélesség
-        sm: '80px',       // Tablet nézeten közepes minimum szélesség
-        md: '90px'        // Asztali nézeten nagyobb minimum szélesség
-      },
-      '&:hover': {
-        backgroundColor: '#fff',
-        color: '#333',
-      },
-    }}
-  >
-    Sign Up
-  </Button>
+                <Button
+                  component={Link}
+                  to="/signup"
+                  sx={{
+                    color: '#fff',
+                    border: '1px solid #fff',
+                    borderRadius: '5px',
+                    padding: {
+                      xs: '2px 6px',  
+                      sm: '5px 10px'
+                    },
+                    fontSize: {
+                      xs: '0.7rem',    
+                      sm: '1rem'
+                    },
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                      backgroundColor: '#fff',
+                      color: '#333',
+                    },
+                  }}
+                >
+                  Sign Up
+                </Button>
 </Box>
 
               </>
