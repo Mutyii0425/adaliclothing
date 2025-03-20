@@ -22,7 +22,7 @@ describe('Termék részletek tesztek', function() {
     await driver.sleep(3000); // Várjunk az átirányításra
     
     // Navigáljunk egy termék oldalra
-    await driver.get('http://localhost:3000/termek/1');
+    await driver.get('http://localhost:3000/termekekk/1');
     await driver.sleep(2000);
   });
 
