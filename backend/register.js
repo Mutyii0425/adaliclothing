@@ -332,6 +332,7 @@ app.post('/forgot-password', async (req, res) => {
       'UPDATE user SET reset_token = ?, reset_expires = ? WHERE email = ?',
       [resetToken, resetExpires, email]
     );
+
     
     // Küldünk egy emailt a jelszó visszaállítási linkkel
     const msg = {
@@ -473,6 +474,7 @@ async function checkAndFixDatabaseSchema() {
       await db.execute("ALTER TABLE user ADD COLUMN reset_expires DATETIME DEFAULT NULL");
       console.log("Added reset_expires column to user table");
     }
+
     
     // Töröljük a lejárt tokeneket
     await db.execute("UPDATE user SET reset_token = NULL, reset_expires = NULL WHERE reset_expires < NOW()");
