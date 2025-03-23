@@ -170,17 +170,18 @@ const handleCheckout = () => {
   };
 
   return (
-    <div style={{
-      backgroundColor: darkMode ? '#333' : '#f5f5f5',
-      backgroundImage: darkMode 
-        ? 'radial-gradient(#444 1px, transparent 1px)'
-        : 'radial-gradient(#e0e0e0 1px, transparent 1px)',
-      backgroundSize: '20px 20px',
-      color: darkMode ? 'white' : 'black',
-      minHeight: '100vh',
-      paddingBottom: '100px', 
-      transition: 'all 0.3s ease-in-out'
-    }}>
+   <div style={{
+  backgroundColor: darkMode ? '#333' : '#f5f5f5',
+  backgroundImage: darkMode 
+    ? 'radial-gradient(#444 1px, transparent 1px)'
+    : 'radial-gradient(#aaaaaa 1px, transparent 1px)',  // Changed from #e0e0e0 to #aaaaaa for better visibility
+  backgroundSize: '20px 20px',
+  color: darkMode ? 'white' : 'black',
+  minHeight: '100vh',
+  paddingBottom: '100px', 
+  transition: 'all 0.3s ease-in-out'
+}}>
+
        <div
         style={{
           display: 'flex',
@@ -497,31 +498,57 @@ const handleCheckout = () => {
   Kosár tartalma
 </Typography>
 
+<Box
+  sx={{
+    border: '2px solid',
+    borderColor: darkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+
+    borderRadius: '24px',
+    padding: { xs: 2, sm: 3, md: 4 },
+    backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.5)',
+    boxShadow: darkMode 
+      ? '0 8px 32px rgba(0, 0, 0, 0.3)' 
+      : '0 8px 32px rgba(0, 0, 0, 0.1)',
+    backdropFilter: 'blur(4px)',
+    transition: 'all 0.3s ease-in-out',
+    '&:hover': {
+  boxShadow: darkMode
+    ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+    : '0 12px 40px rgba(0, 0, 0, 0.15)',
+  borderColor: darkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.7)',
+},
+
+    mb: 4
+  }}
+>
+
 
 <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
   <Grid item xs={12} md={8}>
     {cartItems.map((item, index) => (
       <Card
-        key={item.id}
-        sx={{
-          mb: 2,
-          backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: { xs: '12px', sm: '16px' },
+      key={item.id}
+      sx={{
+        mb: 2,
+        backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: { xs: '12px', sm: '16px' },
+        border: darkMode ? 'none' : '2px solid black', // Add this line for black border in light mode
+        boxShadow: darkMode
+          ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+          : '0 8px 32px rgba(0, 0, 0, 0.1)',
+        transform: 'translateY(0)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          transform: { xs: 'none', sm: 'translateY(-4px)' },
           boxShadow: darkMode
-            ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-            : '0 8px 32px rgba(0, 0, 0, 0.1)',
-          transform: 'translateY(0)',
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            transform: { xs: 'none', sm: 'translateY(-4px)' },
-            boxShadow: darkMode
-              ? '0 12px 40px rgba(0, 0, 0, 0.4)'
-              : '0 12px 40px rgba(0, 0, 0, 0.15)'
-          },
-          animation: `fadeIn 0.6s ease-out ${index * 0.1}s`
-        }}
-      >
+            ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+            : '0 12px 40px rgba(0, 0, 0, 0.15)'
+        },
+        animation: `fadeIn 0.6s ease-out ${index * 0.1}s`
+      }}
+    >
+    
         <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           <Box sx={{
             display: 'flex',
@@ -690,16 +717,20 @@ const handleCheckout = () => {
 
 
     <Grid item xs={12} md={4}>
-      <Card sx={{
-        backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '16px',
-        position: 'sticky',
-        top: '2rem',
-        boxShadow: darkMode 
-          ? '0 8px 32px rgba(0, 0, 0, 0.3)' 
-          : '0 8px 32px rgba(0, 0, 0, 0.1)',
-      }}>
+    <Card 
+  sx={{
+    backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    position: 'sticky',
+    top: '2rem',
+    // Add this line for black border in light mode
+    border: darkMode ? 'none' : '2px solid black',
+    boxShadow: darkMode
+      ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+      : '0 8px 32px rgba(0, 0, 0, 0.1)',
+  }}
+>
         <CardContent sx={{ p: 4 }}>
           <Typography 
             variant="h5" 
@@ -891,7 +922,9 @@ const handleCheckout = () => {
       </CardContent>
     </Card>
   </Box>
+  
 )}
+</Box>
 {quantityAlert && (
   <Box
     sx={{
