@@ -601,8 +601,8 @@ useEffect(() => {
       <div style={{
         backgroundColor: darkMode ? '#333' : '#f5f5f5',
         backgroundImage: darkMode 
-          ? 'radial-gradient(#444 1px, transparent 1px)'
-          : 'radial-gradient(#e0e0e0 1px, transparent 1px)',
+        ? 'radial-gradient(#444 1px, transparent 1px)'
+        : 'radial-gradient(#aaaaaa 1px, transparent 1px)',
         backgroundSize: '20px 20px',
         color: darkMode ? 'white' : 'black',
         minHeight: '100vh',
@@ -1855,7 +1855,7 @@ useEffect(() => {
     <Box
       key={index}
       sx={{
-        backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+        backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
         padding: {
           xs: 2,           
           sm: 2.5,      

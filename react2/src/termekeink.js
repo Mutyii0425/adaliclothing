@@ -181,8 +181,8 @@ export default function TermekReszletek() {
     <div style={{
       backgroundColor: darkMode ? '#333' : '#f5f5f5',
       backgroundImage: darkMode 
-        ? 'radial-gradient(#444 1px, transparent 1px)'
-        : 'radial-gradient(#e0e0e0 1px, transparent 1px)',
+      ? 'radial-gradient(#444 1px, transparent 1px)'
+      : 'radial-gradient(#aaaaaa 1px, transparent 1px)',
       backgroundSize: '20px 20px',
       color: darkMode ? 'white' : 'black',
       minHeight: '100vh',
@@ -368,54 +368,67 @@ export default function TermekReszletek() {
                       </Box>
                     ) : (
                       <>
-                       <Button
-            component={Link}
-            to="/sign"
-            sx={{
-              color: '#fff',
-              border: '1px solid #fff',
-              borderRadius: '5px',
-              padding: {
-                xs: '2px 6px',   
-                sm: '5px 10px'
-              },
-              fontSize: {
-                xs: '0.7rem',  
-              },
-              whiteSpace: 'nowrap',
-              '&:hover': {
-                backgroundColor: '#fff',
-                color: '#333',
-              },
-            }}
-          >
-            Sign In
-          </Button>
-          
-          <Button
-            component={Link}
-            to="/signup"
-            sx={{
-              color: '#fff',
-              border: '1px solid #fff',
-              borderRadius: '5px',
-              padding: {
-                xs: '2px 6px',  
-                sm: '5px 10px'
-              },
-              fontSize: {
-                xs: '0.7rem',  
-                sm: '1rem'
-              },
-              whiteSpace: 'nowrap',
-              '&:hover': {
-                backgroundColor: '#fff',
-                color: '#333',
-              },
-            }}
-          >
-            Sign Up
-          </Button>
+                       <Box sx={{ 
+                         display: 'flex', 
+                         justifyContent: {
+                           xs: 'flex-end',  
+                           sm: 'flex-end'
+                         },
+                         gap: {
+                           xs: '5px',     
+                           sm: '10px'       
+                         }
+                       }}>
+                         <Button
+                                         component={Link}
+                                         to="/sign"
+                                         sx={{
+                                           color: '#fff',
+                                           border: '1px solid #fff',
+                                           borderRadius: '5px',
+                                           padding: {
+                                             xs: '2px 6px',   
+                                             sm: '5px 10px'
+                                           },
+                                           fontSize: {
+                                             xs: '0.7rem',   
+                                             sm: '1rem'
+                                           },
+                                           whiteSpace: 'nowrap',
+                                           '&:hover': {
+                                             backgroundColor: '#fff',
+                                             color: '#333',
+                                           },
+                                         }}
+                                       >
+                                         Sign In
+                                       </Button>
+                       
+                                       <Button
+                                         component={Link}
+                                         to="/signup"
+                                         sx={{
+                                           color: '#fff',
+                                           border: '1px solid #fff',
+                                           borderRadius: '5px',
+                                           padding: {
+                                             xs: '2px 6px',  
+                                             sm: '5px 10px'
+                                           },
+                                           fontSize: {
+                                             xs: '0.7rem',    
+                                             sm: '1rem'
+                                           },
+                                           whiteSpace: 'nowrap',
+                                           '&:hover': {
+                                             backgroundColor: '#fff',
+                                             color: '#333',
+                                           },
+                                         }}
+                                       >
+                                         Sign Up
+                                       </Button>
+                       </Box>
                       </>
                     )}
                   </Box>
@@ -1004,6 +1017,84 @@ export default function TermekReszletek() {
           >
             Rendelés leadása
           </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  </Box>
+)}
+
+{loginAlert && (
+  <Box
+    sx={{
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      zIndex: 1400,
+      animation: 'popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      '@keyframes popIn': {
+        '0%': {
+          opacity: 0,
+          transform: 'translate(-50%, -50%) scale(0.5)',
+        },
+        '50%': {
+          transform: 'translate(-50%, -50%) scale(1.05)',
+        },
+        '100%': {
+          opacity: 1,
+          transform: 'translate(-50%, -50%) scale(1)',
+        },
+      },
+    }}
+  >
+    <Card
+      sx={{
+        minWidth: 350,
+        backgroundColor: darkMode ? 'rgba(45, 45, 45, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        color: darkMode ? '#fff' : '#000',
+        boxShadow: darkMode 
+          ? '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
+          : '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+        borderRadius: '20px',
+        overflow: 'hidden',
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: 'linear-gradient(90deg, #FF9800, #F57C00)',
+          animation: 'loadingBar 2s ease-in-out',
+          '@keyframes loadingBar': {
+            '0%': { width: '0%' },
+            '100%': { width: '100%' }
+          }
+        }}
+      />
+      <CardContent sx={{ p: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 600,
+              mb: 1,
+              background: darkMode 
+                ? 'linear-gradient(45deg, #FF9800, #F57C00)' 
+                : 'linear-gradient(45deg, #FB8C00, #EF6C00)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Bejelentkezés szükséges!
+          </Typography>
+          <Typography variant="body1" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+            A vásárláshoz kérjük, jelentkezz be!
+          </Typography>
         </Box>
       </CardContent>
     </Card>

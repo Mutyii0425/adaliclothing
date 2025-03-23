@@ -942,7 +942,7 @@ const AboutUs = () => {
               </Box>
               <Box sx={{ 
                 flex: { xs: '1', md: '0 0 50%' },
-                pl: { md: 4 },
+                pr: { md: 4 },
                 pl: { xs: 5, md: 4 },
                 display: { xs: 'none', md: 'block' }
               }} />
@@ -963,13 +963,6 @@ const AboutUs = () => {
                 pl: { xs: 5, md: 0 },
                 display: { xs: 'none', md: 'block' }
               }} />
-              <Box sx={{
-                flex: { xs: '1', md: '0 0 50%' },
-                textAlign: { xs: 'left', md: 'left' },
-                pl: { md: 4 },
-                pl: { xs: 5, md: 4 },
-                position: 'relative'
-              }}>
                 <Typography 
                   variant="h5" 
                   sx={{ 
@@ -1009,7 +1002,7 @@ const AboutUs = () => {
                   zIndex: 1
                 }} />
               </Box>
-            </Box>
+        
 
           
             <Box sx={{ 

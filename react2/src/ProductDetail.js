@@ -176,8 +176,8 @@ export default function ProductDetail() {
     <div style={{
       backgroundColor: darkMode ? '#333' : '#f5f5f5',
       backgroundImage: darkMode 
-        ? 'radial-gradient(#444 1px, transparent 1px)'
-        : 'radial-gradient(#e0e0e0 1px, transparent 1px)',
+      ? 'radial-gradient(#444 1px, transparent 1px)'
+      : 'radial-gradient(#aaaaaa 1px, transparent 1px)',
       backgroundSize: '20px 20px',
       color: darkMode ? 'white' : 'black',
       minHeight: '100vh',

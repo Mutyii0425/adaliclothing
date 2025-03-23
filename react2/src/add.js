@@ -63,9 +63,95 @@ const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
+    // Check if user is logged in first
+    if (!isLoggedIn) {
+      // Show login required message
+      const alertBox = document.createElement('div');
+      alertBox.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: ${darkMode ? '#333' : '#fff'};
+        color: ${darkMode ? '#fff' : '#333'};
+        padding: 30px 50px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        animation: fadeIn 0.5s ease-in-out;
+        text-align: center;
+        min-width: 300px;
+        border: 1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+        backdrop-filter: blur(10px);
+      `;
+      alertBox.innerHTML = `
+        <div style="
+          width: 60px;
+          height: 60px;
+          background: #f44336;
+          border-radius: 50%;
+          margin: 0 auto 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h3 style="
+          margin: 0 0 10px 0;
+          font-size: 24px;
+          font-weight: 600;
+          color: ${darkMode ? '#ff6b6b' : '#f44336'};
+        ">Bejelentkezés szükséges</h3>
+        <p style="
+          margin: 0;
+          font-size: 16px;
+          color: ${darkMode ? '#aaa' : '#666'};
+        ">A ruha feltöltéshez be kell jelentkezni.</p>
+        <button style="
+          margin-top: 20px;
+          background: ${darkMode ? '#555' : '#eee'};
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+          color: ${darkMode ? '#fff' : '#333'};
+        ">Bejelentkezés</button>
+      `;
+      
+      document.body.appendChild(alertBox);
+      
+      // Add click event to the button to navigate to login page
+      const button = alertBox.querySelector('button');
+      button.onclick = () => {
+        navigate('/sign');
+        document.body.removeChild(alertBox);
+      };
+      
+      // Auto-remove after 5 seconds if user doesn't click
+      setTimeout(() => {
+        if (document.body.contains(alertBox)) {
+          alertBox.style.animation = 'fadeOut 0.5s ease-in-out';
+          setTimeout(() => {
+            if (document.body.contains(alertBox)) {
+              document.body.removeChild(alertBox);
+            }
+          }, 500);
+        }
+      }, 5000);
+      
+      return; // Stop execution of the function
+    }
+  
     if (!validateForm()) {
       return;
     }
+    
     const termekAdatok = {
       kategoriaId: parseInt(selectedCategory),
       ar: parseInt(price),
@@ -75,6 +161,7 @@ const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 
       imageUrl: selectedImages[0],
       images: selectedImages
     };
+    
     try {
       const response = await fetch('http://localhost:5000/usertermekek', {
         method: 'POST',
@@ -141,6 +228,7 @@ const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 
           }, 500);
         }, 2000);
   
+  
         const style = document.createElement('style');
         style.textContent = `
           @keyframes fadeIn {
@@ -180,6 +268,8 @@ const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 
         const user = JSON.parse(userData);
         setIsLoggedIn(true);
         setUserName(user.username || user.felhasznalonev || 'Felhasználó');
+      } else {
+        setIsLoggedIn(false);
       }
     };
     checkLoginStatus();
@@ -565,7 +655,7 @@ const handleListKeyDown = (event) => {
   backgroundColor: darkMode ? '#333' : '#f5f5f5',
   backgroundImage: darkMode 
     ? 'radial-gradient(#444 1px, transparent 1px)'
-    : 'radial-gradient(#e0e0e0 1px, transparent 1px)',
+    : 'radial-gradient(#aaaaaa 1px, transparent 1px)',
   backgroundSize: '20px 20px',
   color: darkMode ? 'white' : 'black',
   minHeight: '100vh',

@@ -535,13 +535,13 @@ import Footer from './footer';
             backgroundColor: darkMode ? '#333' : 'white',
             color: darkMode ? 'white' : 'black',
             transition: 'transform 0.2s',
-            border: '1px solid #fff',
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
+            border: darkMode ? '1px solid #fff' : '1px solid #000',
             '&:hover': {
               transform: 'scale(1.02)'
-            }
+            },
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%'
           }}>
             <Box sx={{ 
               position: 'relative', 
