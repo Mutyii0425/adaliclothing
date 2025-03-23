@@ -103,14 +103,25 @@ export default function Kosar() {
     setDeleteAlert(false);
   };
 
-    const handleCheckout = () => {
-      navigate('/shipping', {
-        state: {
-          cartItems: cartItems,
-          totalPrice: totalPrice
-        }
-      });
-    };
+    // In the handleCheckout function, add a check for empty cart
+const handleCheckout = () => {
+  if (cartItems.length === 0) {
+    // Show an error message if cart is empty
+    setQuantityMessage('A kosár üres! Kérjük, adjon hozzá termékeket a folytatáshoz.');
+    setQuantityAlert(true);
+    setTimeout(() => setQuantityAlert(false), 3000);
+    return; // Prevent navigation
+  }
+  
+  // If cart has items, proceed to shipping page
+  navigate('/shipping', {
+    state: {
+      cartItems: cartItems,
+      totalPrice: totalPrice
+    }
+  });
+};
+
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
