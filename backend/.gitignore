@@ -20,4 +20,5 @@ yarn-debug.log*
 yarn-error.log*
 
 backend/vision-api-key.json
+backend/vision-api-key1.json
 backend/backend.env

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -8,7 +9,6 @@ import {
   Grid, 
   Card, 
   CardContent,
-  Chip,
   Divider,
   Alert,
   Snackbar,
@@ -19,23 +19,37 @@ import {
   useMediaQuery,
   Dialog,
   DialogContent,
-  DialogTitle
+  DialogTitle,
+  FormGroup,
+  FormControlLabel,
+  Switch,
+  ClickAwayListener,
+  Grow,
+  Popper,
+  MenuItem,
+  MenuList,
+  Badge
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import StyleIcon from '@mui/icons-material/Style';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
+import FaceIcon from '@mui/icons-material/Face';
+import MenuIcon from '@mui/icons-material/Menu';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { styled } from '@mui/material/styles';
-import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Menu from './menu2';
+import Footer from './footer';
 
 const Input = styled('input')({
   display: 'none',
 });
 
-const ColorBox = styled(Box)(({ color }) => ({
+const ColorSwatch = styled(Box)(({ color }) => ({
   width: 30,
   height: 30,
   backgroundColor: color,
@@ -48,7 +62,7 @@ const MotionBox = styled(motion.div)({
   width: '100%'
 });
 
-const VisionAdvisor = () => {
+const PersonalStyleAdvisor = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -61,11 +75,18 @@ const VisionAdvisor = () => {
   const [cameraActive, setCameraActive] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
-  const [apiUsage, setApiUsage] = useState(null);
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [sideMenuActive, setSideMenuActive] = useState(false);
+  const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+  const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
+  const [userName, setUserName] = useState('');
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
   // Sötét mód beállítása a localStorage alapján
   useEffect(() => {
@@ -75,24 +96,27 @@ const VisionAdvisor = () => {
     }
   }, []);
 
-  // API használati adatok lekérése
+  // Bejelentkezési állapot ellenőrzése
   useEffect(() => {
-    const fetchApiUsage = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/usage');
-        if (response.ok) {
-          const data = await response.json();
-          const visionApiData = data.find(api => api.api_name === 'vision_api') || 
-                               { api_name: 'vision_api', usage_count: 0, limit_count: 1000 };
-          setApiUsage(visionApiData);
-        }
-      } catch (error) {
-        console.error('Hiba az API használati adatok lekérésénél:', error);
+    const checkLoginStatus = () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setIsLoggedIn(true);
+        setUserName(user.username || user.felhasznalonev || 'Felhasználó');
       }
     };
-    
-    fetchApiUsage();
+    checkLoginStatus();
   }, []);
+
+  // Oldalsó menü kezelése
+  useEffect(() => {
+    if (sideMenuActive) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [sideMenuActive]);
 
   // Első betöltéskor mutassunk egy rövid útmutatót
   useEffect(() => {
@@ -100,6 +124,47 @@ const VisionAdvisor = () => {
       setInfoDialogOpen(true);
     }, 500);
   }, []);
+
+  // Fejléc függvények
+  const toggleSideMenu = () => {
+    setSideMenuActive((prev) => !prev);
+  };
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const handleClose = (event = {}) => {
+    if (event.target && anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+    setOpen(false);
+  };
+
+  const handleListKeyDown = (event) => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      setOpen(false);
+    } else if (event.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setShowLogoutAlert(true);
+    setOpen(false);
+  };
+  
+  const confirmLogout = () => {
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    setShowLogoutAlert(false);
+    navigate('/sign');
+  };
+
+  const handleCartClick = () => {
+    navigate('/kosar');
+  };
 
   // Fájl kiválasztása
   const handleFileChange = (event) => {
@@ -211,6 +276,8 @@ const VisionAdvisor = () => {
 
   // Kép elemzése
   const analyzeImage = async () => {
+    console.log('Kép elemzése kezdődik a frontend oldalon...');
+    
     if (!selectedFile && !previewUrl) {
       setSnackbar({
         open: true,
@@ -227,17 +294,17 @@ const VisionAdvisor = () => {
       let response;
       
       if (selectedFile) {
-        // Fájl feltöltése
+        console.log('Fájl feltöltése:', selectedFile.name);
         const formData = new FormData();
         formData.append('image', selectedFile);
         
-        response = await fetch('http://localhost:5000/api/vision/analyze-file', {
+        response = await fetch('http://localhost:5000/api/style/analyze-person', {
           method: 'POST',
           body: formData
         });
       } else if (previewUrl) {
-        // Base64 kép küldése
-        response = await fetch('http://localhost:5000/api/analyze-image', {
+        console.log('Base64 kép küldése');
+        response = await fetch('http://localhost:5000/api/style/analyze-base64', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -252,14 +319,13 @@ const VisionAdvisor = () => {
       }
       
       const data = await response.json();
+      console.log('API válasz:', data);
+    
       setResult(data);
-      
-      // Frissítsük az API használati adatokat
-      fetchApiUsage();
       
       setSnackbar({
         open: true,
-        message: 'Kép sikeresen elemezve!',
+        message: 'Stíluselemzés sikeresen elkészült!',
         severity: 'success'
       });
       
@@ -279,21 +345,6 @@ const VisionAdvisor = () => {
     }
   };
 
-  // API használati adatok frissítése
-  const fetchApiUsage = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/usage');
-      if (response.ok) {
-        const data = await response.json();
-        const visionApiData = data.find(api => api.api_name === 'vision_api') || 
-                             { api_name: 'vision_api', usage_count: 0, limit_count: 1000 };
-        setApiUsage(visionApiData);
-      }
-    } catch (error) {
-      console.error('Hiba az API használati adatok lekérésénél:', error);
-    }
-  };
-
   // Új kép választása
   const handleNewImage = () => {
     setSelectedFile(null);
@@ -306,22 +357,6 @@ const VisionAdvisor = () => {
     }
   };
 
-  // Eredmények használata
-  const handleUseResults = () => {
-    // Itt implementálhatjuk, hogy mit csináljon a gomb
-    // Például elmenthetjük az eredményeket a localStorage-ba
-    localStorage.setItem('visionResult', JSON.stringify(result));
-    
-    setSnackbar({
-      open: true,
-      message: 'Elemzési eredmények elmentve!',
-      severity: 'success'
-    });
-    
-    // Navigáljunk a termékfeltöltési oldalra
-    navigate('/add', { state: { visionResult: result } });
-  };
-
   // Snackbar bezárása
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -330,145 +365,409 @@ const VisionAdvisor = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <MotionBox
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Button
-            component={Link}
-            to="/"
-            startIcon={<ArrowBackIcon />}
-            sx={{ 
-              color: darkMode ? '#90caf9' : '#1976d2',
-              '&:hover': {
-                backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.05)'
-              }
-            }}
-          >
-            Vissza a főoldalra
-          </Button>
-          
-          <Typography 
-            variant={isMobile ? "h5" : "h4"} 
-            component="h1"
-            sx={{ 
-              fontWeight: 600,
-              color: darkMode ? '#fff' : '#333',
-              flexGrow: 1,
-              textAlign: isMobile ? 'center' : 'left'
-            }}
-          >
-            AI Ruházati Tanácsadó
-          </Typography>
-        </Box>
-        
-        {apiUsage && (
-          <Paper 
-            elevation={darkMode ? 3 : 1}
-            sx={{ 
-              p: 2, 
-              mb: 3, 
-              backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.05)',
-              borderRadius: 2,
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2
-            }}
-          >
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: darkMode ? '#90caf9' : '#1976d2' }}>
-                API Használati Statisztika
-              </Typography>
-              <Typography variant="body2" sx={{ color: darkMode ? '#ccc' : '#666' }}>
-                Havi kép elemzési limit: {apiUsage.limit_count || 1000} | Felhasznált: {apiUsage.usage_count || 0}
-              </Typography>
-            </Box>
-            
-            <Box sx={{ 
-              width: isMobile ? '100%' : '60%', 
-              height: 10, 
-              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-              borderRadius: 5,
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <Box sx={{ 
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                height: '100%',
-                width: `${((apiUsage.usage_count || 0) / (apiUsage.limit_count || 1000)) * 100}%`,
-                backgroundColor: getApiUsageColor((apiUsage.usage_count || 0) / (apiUsage.limit_count || 1000), darkMode),
-                borderRadius: 5
-              }} />
-            </Box>
-          </Paper>
-        )}
+  // Fő háttérszín és szövegszín a sötét/világos mód alapján
+  const mainBgColor = darkMode ? '#121212' : '#f5f5f5';
+  const mainTextColor = darkMode ? '#ffffff' : '#333333';
+  const primaryColor = darkMode ? '#90caf9' : '#1976d2';
+  const secondaryColor = darkMode ? '#f48fb1' : '#dc004e';
+  const paperBgColor = darkMode ? '#1e1e1e' : '#ffffff';
+  const borderColor = darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)';
 
-        <Box sx={{ 
-          maxWidth: 1200, 
-          mx: 'auto', 
-          p: { xs: 2, sm: 3, md: 4 },
-          backgroundColor: darkMode ? '#1a1a1a' : '#f8f9fa',
-          color: darkMode ? '#fff' : '#333',
-          minHeight: '100vh',
-          borderRadius: 2,
-          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.1)',
-          transition: 'all 0.3s ease'
-        }}>
-          <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Typography 
-              variant="h4" 
-              gutterBottom 
-              align="center" 
-              sx={{ 
-                mb: 2,
-                color: darkMode ? '#fff' : '#333',
-                fontWeight: 600,
-                position: 'relative',
-                display: 'inline-block',
-                left: '50%',
-                transform: 'translateX(-50%)'
+  const colors = {
+    dark: {
+      background: '#121212',
+      paper: '#1e1e1e',
+      text: {
+        primary: '#ffffff',
+        secondary: '#b0b0b0',
+        disabled: '#6c6c6c'
+      },
+      primary: '#90caf9',
+      secondary: '#f48fb1',
+      border: 'rgba(255, 255, 255, 0.12)',
+      divider: 'rgba(255, 255, 255, 0.12)',
+      action: {
+        hover: 'rgba(255, 255, 255, 0.08)',
+        selected: 'rgba(255, 255, 255, 0.16)'
+      }
+    },
+    light: {
+      background: '#f5f5f5',
+      paper: '#ffffff',
+      text: {
+        primary: '#333333',
+        secondary: '#666666',
+        disabled: '#999999'
+      },
+      primary: '#1976d2',
+      secondary: '#dc004e',
+      border: 'rgba(0, 0, 0, 0.12)',
+      divider: 'rgba(0, 0, 0, 0.12)',
+      action: {
+        hover: 'rgba(0, 0, 0, 0.04)',
+        selected: 'rgba(0, 0, 0, 0.08)'
+      }
+    }
+  };
+  
+  // Aktuális színséma kiválasztása
+  const currentColors = darkMode ? colors.dark : colors.light;
+  return (
+    <div style={{
+      backgroundColor: darkMode ? '#333' : '#f5f5f5',
+      backgroundImage: darkMode 
+      ? 'radial-gradient(#444 1px, transparent 1px)'
+      : 'radial-gradient(#aaaaaa 1px, transparent 1px)',
+      backgroundSize: '20px 20px',
+      color: darkMode ? 'white' : 'black',
+      minHeight: '100vh',
+      transition: 'all 0.3s ease-in-out' 
+    }}>
+
+   
+           <Box
+           sx={{
+             position: 'fixed',
+             top: 0,
+             left: sideMenuActive ? 0 : '-250px',
+             width: '250px',
+             height: '100%',
+             backgroundColor: '#fff',
+             boxShadow: '4px 0px 10px rgba(0, 0, 0, 0.2)',
+             zIndex: 1200,
+             transition: 'left 0.1s ease-in-out',
+           }}
+         >
+           <IconButton
+             onClick={toggleSideMenu}
+             sx={{
+               position: 'absolute',
+               zIndex: 1300,
+               top: '10px',
+               right: '10px',
+             }}
+           >
+             <CloseIcon />
+           </IconButton>
+           <Menu sideMenuActive={sideMenuActive} toggleSideMenu={toggleSideMenu} />
+         </Box>
+   
+        <div
+         style={{
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'space-between',
+           backgroundColor: darkMode ? '#333' : '#333',
+           padding: '10px 20px',
+           position: 'relative',
+           width: '100%',
+           boxSizing: 'border-box',
+           borderBottom: '3px solid #ffffff',
+           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
+           marginBottom: '10px', 
+         }}
+       >
+         <IconButton
+           onClick={toggleSideMenu}
+           style={{ color: darkMode ? 'white' : 'white' }}
+         >
+           <MenuIcon />
+         </IconButton>
+       
+         <Typography 
+              variant="h1"
+              sx={{
+                fontWeight: 'bold',
+                fontSize: {
+                 xs: '1.1rem',
+                 sm: '1.5rem',   
+                 md: '2rem'       
+               },
+                textAlign: 'center',
+                color: 'white',
+                position: 'absolute',
+               left: '50%',
+                transform: 'translateX(-50%)',
+                width: 'auto',
+                pointerEvents: 'none'
               }}
             >
-              AI Ruházati Tanácsadó
+              Adali Clothing
+            </Typography>
+           <Box sx={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+               {isLoggedIn ? (
+          <Box sx={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                 <IconButton
+                                   onClick={handleCartClick}
+                                   sx={{
+                                     color: '#fff',
+                                     '&:hover': {
+                                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                     }
+                                   }}
+                                 >
+                                   <Badge 
+                                     badgeContent={cartItemCount} 
+                                     color="primary"
+                                     sx={{ 
+                                       '& .MuiBadge-badge': { 
+                                         backgroundColor: '#fff', 
+                                         color: '#333' 
+                                       } 
+                                     }}
+                                   >
+                                     <ShoppingCartIcon />
+                                   </Badge>
+                                 </IconButton>
+                                         <Button
+                                         ref={anchorRef}
+                                           onClick={handleToggle}
+                                           sx={{
+                                             color: '#fff',
+                                             zIndex: 1300,
+                                             border: '1px solid #fff',
+                                             borderRadius: '5px',
+                                             padding: '5px 10px',
+                                           }}
+                                         >
+                                           Profil
+                                         </Button>
+                                 <Popper
+                   open={open}
+                   anchorEl={anchorRef.current}
+                   placement="bottom-start"
+                   transition
+                   disablePortal
+                   sx={{ 
+                     zIndex: 1300,
+                     mt: 1, 
+                     '& .MuiPaper-root': {
+                       overflow: 'hidden',
+                       borderRadius: '12px',
+                       boxShadow: darkMode 
+                         ? '0 8px 32px rgba(0, 0, 0, 0.4)'
+                         : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                       border: darkMode 
+                         ? '1px solid rgba(255, 255, 255, 0.1)'
+                         : '1px solid rgba(0, 0, 0, 0.05)',
+                     }
+                   }}
+                 >
+                   {({ TransitionProps, placement }) => (
+                     <Grow
+                       {...TransitionProps}
+                       style={{
+                         transformOrigin: placement === 'bottom-start' ? 'left top' : 'left bottom',
+                       }}
+                     >
+                       <Paper
+                         sx={{
+                           backgroundColor: darkMode ? '#2d2d2d' : '#ffffff',
+                           minWidth: '200px',
+                         }}
+                       >
+                         <ClickAwayListener onClickAway={handleClose}>
+                           <MenuList 
+                             autoFocusItem={open} 
+                             onKeyDown={handleListKeyDown}
+                             sx={{ py: 1 }}
+                           >
+                             <MenuItem 
+                               onClick={handleClose}
+                               sx={{
+                                 py: 1.5,
+                                 px: 2,
+                                 color: darkMode ? '#fff' : '#333',
+                                 '&:hover': {
+                                   backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                 },
+                                 gap: 2,
+                               }}
+                             >
+                               <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                 {userName} profilja
+                               </Typography>
+                             </MenuItem>
+   
+                             <MenuItem 
+                               onClick={() => {
+                                 handleClose();
+                                 navigate('/fiokom');
+                               }}
+                               sx={{
+                                 py: 1.5,
+                                 px: 2,
+                                 color: darkMode ? '#fff' : '#333',
+                                 '&:hover': {
+                                   backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                 },
+                                 gap: 2,
+                               }}
+                             >
+                               <Typography variant="body1">Fiókom</Typography>
+                             </MenuItem>
+   
+                             <MenuItem 
+                               onClick={handleLogout}
+                               sx={{
+                                 py: 1.5,
+                                 px: 2,
+                                 color: '#ff4444',
+                                 '&:hover': {
+                                   backgroundColor: 'rgba(255,68,68,0.1)',
+                                 },
+                                 gap: 2,
+                                 borderTop: '1px solid',
+                                 borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                                 mt: 1,
+                               }}
+                             >
+                               <Typography variant="body1">Kijelentkezés</Typography>
+                             </MenuItem>
+                           </MenuList>
+                         </ClickAwayListener>
+                       </Paper>
+                     </Grow>
+                   )}
+                 </Popper>
+   
+                 </Box>
+               ) : (
+                 <>
+   <Box sx={{ 
+     display: 'flex', 
+     justifyContent: {
+       xs: 'flex-end',  
+       sm: 'flex-end'
+     },
+     gap: {
+       xs: '5px',     
+       sm: '10px'       
+     }
+   }}>
+     <Button
+                     component={Link}
+                     to="/sign"
+                     sx={{
+                       color: '#fff',
+                       border: '1px solid #fff',
+                       borderRadius: '5px',
+                       padding: {
+                         xs: '2px 6px',   
+                         sm: '5px 10px'
+                       },
+                       fontSize: {
+                         xs: '0.7rem',   
+                         sm: '1rem'
+                       },
+                       whiteSpace: 'nowrap',
+                       '&:hover': {
+                         backgroundColor: '#fff',
+                         color: '#333',
+                       },
+                     }}
+                   >
+                     Sign In
+                   </Button>
+   
+                   <Button
+                     component={Link}
+                     to="/signup"
+                     sx={{
+                       color: '#fff',
+                       border: '1px solid #fff',
+                       borderRadius: '5px',
+                       padding: {
+                         xs: '2px 6px',  
+                         sm: '5px 10px'
+                       },
+                       fontSize: {
+                         xs: '0.7rem',    
+                         sm: '1rem'
+                       },
+                       whiteSpace: 'nowrap',
+                       '&:hover': {
+                         backgroundColor: '#fff',
+                         color: '#333',
+                       },
+                     }}
+                   >
+                     Sign Up
+                   </Button>
+   </Box>
+                 </>
+               )}
+             </Box>
+           </div>
+   
+         <FormGroup
+           sx={{
+             position: 'absolute',
+             top: 60,
+             right: 20,
+           }}
+         >
+           <FormControlLabel
+             control={
+               <Switch
+              
+                 color="default"
+                 sx={{
+                   color: 'black',
+                 }}
+                 checked={darkMode}
+                 onChange={() => setDarkMode((prev) => !prev)}
+               />
+             }
+             label="Dark Mode"
+           />
+         </FormGroup>
+
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Typography 
+              variant={isMobile ? "h5" : "h4"} 
+              component="h1"
+              sx={{ 
+                fontWeight: 600,
+                color: mainTextColor,
+                flexGrow: 1,
+                textAlign: isMobile ? 'center' : 'center',
+              }}
+            >
+              Személyes Stílustanácsadó
               <Tooltip title="Információ a szolgáltatásról">
                 <IconButton 
                   size="small" 
-                  sx={{ ml: 1, color: darkMode ? '#90caf9' : '#1976d2' }}
+                  sx={{ ml: 1, color: primaryColor }}
                   onClick={() => setInfoDialogOpen(true)}
                 >
                   <InfoIcon />
                 </IconButton>
               </Tooltip>
             </Typography>
-            
-            <Typography 
-              variant="body1" 
-              paragraph 
-              align="center" 
-              sx={{ 
-                mb: 4,
-                maxWidth: 800,
-                mx: 'auto',
-                color: darkMode ? '#ccc' : '#555',
-                lineHeight: 1.6
-              }}
-            >
-              Tölts fel egy képet a ruhadarabról, és az AI segít meghatározni annak kategóriáját, 
-              javaslatot tesz a leírásra, és felismeri a színeket.
-            </Typography>
-          </MotionBox>
+          </Box>
+          
+          <Typography 
+            variant="body1" 
+            paragraph 
+            align="center" 
+            sx={{ 
+              mb: 4,
+              maxWidth: 800,
+              mx: 'auto',
+              color: darkMode ? '#ccc' : '#555',
+              lineHeight: 1.6
+            }}
+          >
+            Tölts fel egy képet magadról, és az AI segít meghatározni a személyes stílusodat,
+            színtípusodat, és személyre szabott öltözködési tanácsokat ad.
+          </Typography>
 
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
@@ -480,8 +779,9 @@ const VisionAdvisor = () => {
                 <Paper 
                   elevation={darkMode ? 4 : 2} 
                   sx={{ 
-                    p: 3, 
-                    backgroundColor: darkMode ? '#2d2d2d' : '#fff',
+                    p: 2, 
+                    backgroundColor: paperBgColor,
+                    border: darkMode ? 'none' : '1px solid #000000',
                     borderRadius: 2,
                     height: '100%',
                     display: 'flex',
@@ -491,7 +791,7 @@ const VisionAdvisor = () => {
                   <Typography 
                     variant="h6" 
                     gutterBottom
-                    sx={{ color: darkMode ? '#90caf9' : '#1976d2', mb: 2 }}
+                    sx={{ color: primaryColor, mb: 2 }}
                   >
                     Kép feltöltése vagy készítése
                   </Typography>
@@ -508,7 +808,7 @@ const VisionAdvisor = () => {
                         backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          borderColor: darkMode ? '#90caf9' : '#1976d2',
+                          borderColor: primaryColor,
                           backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.05)'
                         }
                       }}
@@ -527,7 +827,7 @@ const VisionAdvisor = () => {
                           startIcon={<CloudUploadIcon />}
                           sx={{ 
                             mb: 2,
-                            backgroundColor: darkMode ? '#90caf9' : '#1976d2',
+                            backgroundColor: primaryColor,
                             '&:hover': {
                               backgroundColor: darkMode ? '#42a5f5' : '#115293'
                             }
@@ -545,8 +845,8 @@ const VisionAdvisor = () => {
                         startIcon={<PhotoCameraIcon />}
                         sx={{ 
                           mt: 2,
-                          borderColor: darkMode ? '#90caf9' : '#1976d2',
-                          color: darkMode ? '#90caf9' : '#1976d2',
+                          borderColor: primaryColor,
+                          color: primaryColor,
                           '&:hover': {
                             borderColor: darkMode ? '#42a5f5' : '#115293',
                             backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.05)'
@@ -617,7 +917,7 @@ const VisionAdvisor = () => {
                           onClick={analyzeImage}
                           disabled={loading}
                           sx={{ 
-                            backgroundColor: darkMode ? '#90caf9' : '#1976d2',
+                            backgroundColor: primaryColor,
                             '&:hover': {
                               backgroundColor: darkMode ? '#42a5f5' : '#115293'
                             }
@@ -628,7 +928,7 @@ const VisionAdvisor = () => {
                               <CircularProgress size={24} sx={{ color: '#fff', mr: 1 }} />
                               Elemzés...
                             </>
-                          ) : 'Kép elemzése'}
+                          ) : 'Stílus elemzése'}
                         </Button>
                         <Button
                           variant="outlined"
@@ -671,537 +971,532 @@ const VisionAdvisor = () => {
                   elevation={darkMode ? 4 : 2} 
                   sx={{ 
                     p: 3, 
-                    backgroundColor: darkMode ? '#2d2d2d' : '#fff',
+                    border: darkMode ? 'none' : '1px solid #000000',
+                    backgroundColor: paperBgColor,
                     borderRadius: 2,
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column'
+                    
                   }}
                 >
                   <Typography 
                     variant="h6" 
                     gutterBottom
-                    sx={{ color: darkMode ? '#90caf9' : '#1976d2', mb: 2 }}
+                    sx={{ color: primaryColor, mb: 2 }}
                   >
-                    Elemzési eredmények
+                    Stíluselemzés eredménye
                   </Typography>
 
                   {!result && !loading && (
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        height: '100%',
-                        minHeight: 200,
-                        color: darkMode ? '#aaa' : '#666'
-                      }}
-                    >
-                      <InfoIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
-                      <Typography variant="body1" align="center">
-                        Tölts fel egy képet és kattints az "Elemzés" gombra a ruházati elemzés megkezdéséhez
-                      </Typography>
-                    </Box>
-                  )}
+                                       <Box 
+                                       sx={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column', 
+                                         alignItems: 'center', 
+                                         justifyContent: 'center',
+                                         height: '100%',
+                                         minHeight: 200,
+                                         color: darkMode ? '#aaa' : '#666'
+                                       }}
+                                     >
+                                       <InfoIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                                       <Typography variant="body1" align="center">
+                                         Tölts fel egy képet és kattints a "Stílus elemzése" gombra a személyes stíluselemzés megkezdéséhez
+                                       </Typography>
+                                     </Box>
+                                   )}
+                 
+                                   {loading && (
+                                     <Box 
+                                       sx={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column', 
+                                         alignItems: 'center', 
+                                         justifyContent: 'center',
+                                         height: '100%',
+                                         minHeight: 200
+                                       }}
+                                     >
+                                       <CircularProgress size={60} sx={{ mb: 3, color: primaryColor }} />
+                                       <Typography variant="h6" align="center" sx={{ mb: 1 }}>
+                                         Stíluselemzés folyamatban...
+                                       </Typography>
+                                       <Typography variant="body2" align="center" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+                                         Az AI most elemzi a képet és személyre szabott stílustanácsokat készít
+                                       </Typography>
+                                     </Box>
+                                   )}
+                 
+                                   {result && (
+                                  <Box sx={{ mt: 1, overflowY: 'auto' }}>
+                                    <Card 
+                                      variant="outlined" 
+                                      sx={{ 
+                                        mb: 3, 
+                                        backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.05)',
+                                        borderColor: darkMode ? 'rgba(144, 202, 249, 0.3)' : 'rgba(25, 118, 210, 0.2)',
+                                        borderRadius: 2
+                                      }}
+                                    >
+                                      <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                          <ColorLensIcon sx={{ mr: 1, color: currentColors.primary }} />
+                                          <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ 
+                                              fontWeight: 600, 
+                                              color: currentColors.primary
+                                            }}
+                                          >
+                                            Színtípus
+                                          </Typography>
+                                        </Box>
+                                        <Typography variant="body1" sx={{ mb: 2, color: currentColors.text.primary }}>
+                                          {result.colorType}
+                                        </Typography>
+                                        
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                          <AccessibilityNewIcon sx={{ mr: 1, color: currentColors.primary }} />
+                                          <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ 
+                                              fontWeight: 600, 
+                                              color: currentColors.primary
+                                            }}
+                                          >
+                                            Testalkat
+                                          </Typography>
+                                        </Box>
+                                        <Typography variant="body1" sx={{ mb: 2, color: currentColors.text.primary }}>
+                                          {result.bodyType}
+                                        </Typography>
+                                        
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                          <FaceIcon sx={{ mr: 1, color: currentColors.primary }} />
+                                          <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ 
+                                              fontWeight: 600, 
+                                              color: currentColors.primary
+                                            }}
+                                          >
+                                            Arcforma
+                                          </Typography>
+                                        </Box>
+                                        <Typography variant="body1" sx={{ mb: 2, color: currentColors.text.primary }}>
+                                          {result.faceShape}
+                                        </Typography>
+                                        
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                          <StyleIcon sx={{ mr: 1, color: currentColors.primary }} />
+                                          <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ 
+                                              fontWeight: 600, 
+                                              color: currentColors.primary
+                                            }}
+                                          >
+                                            Javasolt stílus
+                                          </Typography>
+                                        </Box>
+                                        <Typography variant="body1" sx={{ mb: 2, color: currentColors.text.primary }}>
+                                          {result.recommendedStyle}
+                                        </Typography>
+                                        
+                                        <Divider sx={{ my: 2 }} />
+                                        
+                                        <Typography 
+                                          variant="subtitle1" 
+                                          sx={{ 
+                                            fontWeight: 600, 
+                                            mb: 1,
+                                            color: currentColors.primary
+                                          }}
+                                        >
+                                          Ajánlott színek
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                                          {result.recommendedColors && result.recommendedColors.map((color, index) => (
+                                            <Tooltip key={index} title={color.name} arrow>
+                                              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <ColorSwatch color={color.hex} />
+                                                <Typography variant="caption" sx={{ mt: 0.5, color: currentColors.text.primary }}>
+                                                  {color.name}
+                                                </Typography>
+                                              </Box>
+                                            </Tooltip>
+                                          ))}
+                                        </Box>
+                                        
+                                        <Typography 
+                                          variant="subtitle1" 
+                                          sx={{ 
+                                            fontWeight: 600, 
+                                            mb: 1,
+                                            color: currentColors.primary
+                                          }}
+                                        >
+                                          Kerülendő színek
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                                          {result.avoidColors && result.avoidColors.map((color, index) => (
+                                            <Tooltip key={index} title={color.name} arrow>
+                                              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <ColorSwatch color={color.hex} />
+                                                <Typography variant="caption" sx={{ mt: 0.5, color: currentColors.text.primary }}>
+                                                  {color.name}
+                                                </Typography>
+                                              </Box>
+                                            </Tooltip>
+                                          ))}
+                                        </Box>
+                                        
+                                        <Divider sx={{ my: 2 }} />
+                                        
+                                        <Typography 
+                                          variant="subtitle1" 
+                                          sx={{ 
+                                            fontWeight: 600, 
+                                            mb: 1,
+                                            color: currentColors.primary
+                                          }}
+                                        >
+                                          Stílustanácsok
+                                        </Typography>
+                                        <Typography 
+                                          variant="body2" 
+                                          sx={{ 
+                                            whiteSpace: 'pre-line',
+                                            lineHeight: 1.6,
+                                            color: currentColors.text.primary
+                                          }}
+                                        >
+                                          {result.styleAdvice}
+                                        </Typography>
+                                      </CardContent>
+                                    </Card>
+                                  </Box>
+                                )}
 
-                  {loading && (
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        height: '100%',
-                        minHeight: 200
-                      }}
-                    >
-                      <CircularProgress size={60} sx={{ mb: 3, color: darkMode ? '#90caf9' : '#1976d2' }} />
-                      <Typography variant="h6" align="center" sx={{ mb: 1 }}>
-                        Kép elemzése folyamatban...
-                      </Typography>
-                      <Typography variant="body2" align="center" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                        Az AI most elemzi a képet és azonosítja a ruházati terméket
-                      </Typography>
-                    </Box>
-                  )}
-
-                  {result && (
-                    <Box sx={{ mt: 1 }}>
-                      <Card 
-                        variant="outlined" 
-                        sx={{ 
-                          mb: 3, 
-                          backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.05)',
-                          borderColor: darkMode ? 'rgba(144, 202, 249, 0.3)' : 'rgba(25, 118, 210, 0.2)',
-                          borderRadius: 2
-                        }}
-                      >
-                        <CardContent>
-                          <Typography 
-                            variant="subtitle1" 
-                            sx={{ 
-                              fontWeight: 600, 
-                              mb: 1,
-                              color: darkMode ? '#90caf9' : '#1976d2'
-                            }}
-                          >
-                            Javasolt kategória
-                          </Typography>
-                          <Typography variant="body1" sx={{ mb: 2 }}>
-                            {(() => {
-                              const categories = {
-                                '1': 'Sapkák',
-                                '2': 'Nadrágok',
-                                '3': 'Zoknik',
-                                '4': 'Pólók',
-                                '5': 'Pulloverek',
-                                '6': 'Kabátok',
-                                '7': 'Lábviseletek',
-                                '8': 'Atléták',
-                                '9': 'Kiegészítők',
-                                '10': 'Szoknyák',
-                                '11': 'Alsóneműk',
-                                '12': 'Mellények'
-                              };
-                              return categories[result.suggestedCategory] || 'Egyéb ruházat';
-                            })()}
-                          </Typography>
-                          
-                          <Typography 
-                            variant="subtitle1" 
-                            sx={{ 
-                              fontWeight: 600, 
-                              mb: 1,
-                              color: darkMode ? '#90caf9' : '#1976d2'
-                            }}
-                          >
-                            Javasolt leírás
-                          </Typography>
-                          <Typography variant="body1" sx={{ mb: 2 }}>
-                            {result.suggestedDescription}
-                          </Typography>
-                          
-                          <Divider sx={{ my: 2 }} />
-                          
-                          <Typography 
-                            variant="subtitle1" 
-                            sx={{ 
-                              fontWeight: 600, 
-                              mb: 1,
-                              color: darkMode ? '#90caf9' : '#1976d2'
-                            }}
-                          >
-                            Felismert címkék
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                            {result.tags && result.tags.map((tag, index) => (
-                              <Chip 
-                                key={index} 
-                                label={tag} 
-                                size="small"
-                                sx={{ 
-                                    backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-                                    color: darkMode ? '#fff' : '#333'
-                                  }}
-                                />
-                              ))}
-                            </Box>
-                            
-                            <Typography 
-                              variant="subtitle1" 
-                              sx={{ 
-                                fontWeight: 600, 
-                                mb: 1,
-                                color: darkMode ? '#90caf9' : '#1976d2'
-                              }}
-                            >
-                              Domináns színek
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                              {result.colors && result.colors.map((color, index) => (
-                                <Tooltip key={index} title={color} arrow>
-                                  <ColorBox color={color} />
-                                </Tooltip>
-                              ))}
-                            </Box>
-                            
-                            <Typography 
-                              variant="subtitle1" 
-                              sx={{ 
-                                fontWeight: 600, 
-                                mb: 1,
-                                color: darkMode ? '#90caf9' : '#1976d2'
-                              }}
-                            >
-                              Megbízhatóság
-                            </Typography>
-                            <Box 
-                              sx={{ 
-                                width: '100%', 
-                                height: 8, 
-                                backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-                                borderRadius: 4,
-                                position: 'relative',
-                                overflow: 'hidden'
-                              }}
-                            >
-                              <Box 
-                                sx={{ 
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  height: '100%',
-                                  width: `${(result.confidence || 0.7) * 100}%`,
-                                  backgroundColor: getConfidenceColor(result.confidence || 0.7, darkMode),
-                                  borderRadius: 4,
-                                  transition: 'width 1s ease-in-out'
-                                }}
-                              />
-                            </Box>
-                            <Typography 
-                              variant="body2" 
-                              align="right" 
-                              sx={{ mt: 0.5, color: darkMode ? '#aaa' : '#666' }}
-                            >
-                              {Math.round((result.confidence || 0.7) * 100)}%
-                            </Typography>
-                          </CardContent>
-                        </Card>
+                                 </Paper>
+                               </MotionBox>
+                             </Grid>
+                           </Grid>
+                 
+                           <Box sx={{ mt: 4, textAlign: 'center' }}>
+                             <Divider sx={{ mb: 3 }} />
+                             <Typography variant="body2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+                               A Személyes Stílustanácsadó a Google Cloud Vision AI technológiáját használja.
+                               A szolgáltatás pontossága a feltöltött képek minőségétől függően változhat.
+                             </Typography>
+                           </Box>
+                         </MotionBox>
+                       </Container>
+                 
+                       {/* Információs dialógus */}
+                       <Dialog
+                         open={infoDialogOpen}
+                         onClose={() => setInfoDialogOpen(false)}
+                         maxWidth="sm"
+                         fullWidth
+                         PaperProps={{
+                           sx: {
+                             backgroundColor: paperBgColor,
+                             borderRadius: 2,
+                             boxShadow: darkMode 
+                               ? '0 8px 32px rgba(0,0,0,0.5)' 
+                               : '0 8px 32px rgba(0,0,0,0.1)',
+                           }
+                         }}
+                       >
+                         <DialogTitle sx={{ 
+                           color: primaryColor,
+                           borderBottom: '1px solid',
+                           borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                           pb: 2
+                         }}>
+                           Személyes Stílustanácsadó - Útmutató
+                           <IconButton
+                             onClick={() => setInfoDialogOpen(false)}
+                             sx={{
+                               position: 'absolute',
+                               top: 8,
+                               right: 8,
+                               color: darkMode ? '#aaa' : '#666'
+                             }}
+                           >
+                             <CloseIcon />
+                           </IconButton>
+                         </DialogTitle>
+                         
+                         <DialogContent sx={{ py: 3 }}>
+                        <Typography variant="body1" paragraph sx={{ color: '#ffffff' }}>
+                          Üdvözöljük a Személyes Stílustanácsadó szolgáltatásban! Ez a funkció segít meghatározni a személyes stílusodat és színtípusodat.
+                        </Typography>
                         
-                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                          <Button
-                            variant="contained"
-                            color="success"
-                            startIcon={<CheckCircleIcon />}
-                            onClick={handleUseResults}
-                            sx={{ 
-                              backgroundColor: '#4caf50',
-                              '&:hover': {
-                                backgroundColor: '#388e3c'
-                              }
-                            }}
-                          >
-                            Eredmények felhasználása
-                          </Button>
-                        </Box>
-                      </Box>
-                    )}
-                  </Paper>
-                </MotionBox>
-              </Grid>
-            </Grid>
-  
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
-              <Divider sx={{ mb: 3 }} />
-              <Typography variant="body2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                Az AI Ruházati Tanácsadó a Google Cloud Vision API technológiáját használja.
-                A szolgáltatás pontossága a feltöltött képek minőségétől függően változhat.
-              </Typography>
-            </Box>
-          </Box>
-  
-          {/* Információs dialógus */}
-          <Dialog
-            open={infoDialogOpen}
-            onClose={() => setInfoDialogOpen(false)}
-            maxWidth="sm"
-            fullWidth
-            PaperProps={{
-              sx: {
-                backgroundColor: darkMode ? '#2d2d2d' : '#fff',
-                borderRadius: 2,
-                boxShadow: darkMode 
-                  ? '0 8px 32px rgba(0,0,0,0.5)' 
-                  : '0 8px 32px rgba(0,0,0,0.1)',
-              }
-            }}
-          >
-            <DialogTitle sx={{ 
-              color: darkMode ? '#90caf9' : '#1976d2',
-              borderBottom: '1px solid',
-              borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-              pb: 2
-            }}>
-              AI Ruházati Tanácsadó - Útmutató
-              <IconButton
-                onClick={() => setInfoDialogOpen(false)}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  color: darkMode ? '#aaa' : '#666'
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </DialogTitle>
-            
-            <DialogContent sx={{ py: 3 }}>
-              <Typography variant="body1" paragraph>
-                Üdvözöljük az AI Ruházati Tanácsadó szolgáltatásban! Ez a funkció segít a ruházati termékek kategorizálásában és leírásában.
-              </Typography>
-              
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1 }}>
-                Hogyan működik?
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                1. Tölts fel egy képet a ruhadarabról vagy készíts egy fotót a kamerával
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                2. Kattints a "Kép elemzése" gombra
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                3. Az AI elemzi a képet és javaslatot tesz a kategóriára, leírásra és felismeri a színeket
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                4. Az eredményeket felhasználhatod a termék feltöltésekor
-              </Typography>
-              
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1 }}>
-                Tippek a legjobb eredményekért:
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                • Használj jó megvilágítást a képek készítésekor
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                • A ruhadarab legyen a kép középpontjában
-              </Typography>
-              
-              <Typography variant="body2" paragraph>
-                • Kerüld a túl zsúfolt hátteret
-              </Typography>
-              
-              <Button
-                variant="contained"
-                onClick={() => setInfoDialogOpen(false)}
-                fullWidth
-                sx={{ 
-                  mt: 2,
-                  backgroundColor: darkMode ? '#90caf9' : '#1976d2',
-                  '&:hover': {
-                    backgroundColor: darkMode ? '#42a5f5' : '#115293'
-                  }
-                }}
-              >
-                Értettem
-              </Button>
-            </DialogContent>
-          </Dialog>
-  
-          {/* Eredmény dialógus */}
-          <Dialog
-            open={resultDialogOpen}
-            onClose={() => setResultDialogOpen(false)}
-            maxWidth="md"
-            fullWidth
-            PaperProps={{
-              sx: {
-                backgroundColor: darkMode ? '#2d2d2d' : '#fff',
-                borderRadius: 2,
-                boxShadow: darkMode 
-                  ? '0 8px 32px rgba(0,0,0,0.5)' 
-                  : '0 8px 32px rgba(0,0,0,0.1)',
-              }
-            }}
-          >
-            <DialogTitle sx={{ 
-              color: darkMode ? '#4caf50' : '#388e3c',
-              borderBottom: '1px solid',
-              borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-              pb: 2
-            }}>
-              Elemzés sikeres!
-              <IconButton
-                onClick={() => setResultDialogOpen(false)}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  color: darkMode ? '#aaa' : '#666'
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </DialogTitle>
-            
-            <DialogContent sx={{ py: 3 }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={5}>
-                  <Box
-                    component="img"
-                    src={previewUrl}
-                    alt="Elemzett kép"
-                    sx={{ 
-                      width: '100%', 
-                      borderRadius: 2,
-                      boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0,0,0,0.1)'
-                    }}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={7}>
-                  <Typography variant="h6" gutterBottom sx={{ color: darkMode ? '#90caf9' : '#1976d2' }}>
-                    Elemzési eredmények
-                  </Typography>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                      Kategória:
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {(() => {
-                        const categories = {
-                          '1': 'Sapkák',
-                          '2': 'Nadrágok',
-                          '3': 'Zoknik',
-                          '4': 'Pólók',
-                          '5': 'Pulloverek',
-                          '6': 'Kabátok',
-                          '7': 'Lábviseletek',
-                          '8': 'Atléták',
-                          '9': 'Kiegészítők',
-                          '10': 'Szoknyák',
-                          '11': 'Alsóneműk',
-                          '12': 'Mellények'
-                        };
-                        return categories[result?.suggestedCategory] || 'Egyéb ruházat';
-                      })()}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                      Leírás:
-                    </Typography>
-                    <Typography variant="body1">
-                      {result?.suggestedDescription}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                      Címkék:
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                      {result?.tags && result.tags.map((tag, index) => (
-                        <Chip 
-                          key={index} 
-                          label={tag} 
-                          size="small"
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1, color: '#ffffff' }}>
+                          Hogyan működik?
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          1. Tölts fel egy képet magadról vagy készíts egy fotót a kamerával
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          2. Kattints a "Stílus elemzése" gombra
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          3. Az AI elemzi a képet és meghatározza a színtípusodat, testakatodat, arcformádat és javasolt stílusodat
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          4. Az eredmények alapján személyre szabott öltözködési tanácsokat kapsz
+                        </Typography>
+                        
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1, color: '#ffffff' }}>
+                          Tippek a legjobb eredményekért:
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          • Használj természetes fényt a képek készítésekor
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          • A kép lehetőleg az egész alakodat vagy legalább az arcodat és vállaidat mutassa
+                        </Typography>
+                        
+                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                          • Kerüld az erős szűrőket és a túlzott képszerkesztést
+                        </Typography>
+                        
+                        <Button
+                          variant="contained"
+                          onClick={() => setInfoDialogOpen(false)}
+                          fullWidth
                           sx={{ 
-                            backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-                            color: darkMode ? '#fff' : '#333'
+                            mt: 2,
+                            backgroundColor: primaryColor,
+                            '&:hover': {
+                              backgroundColor: darkMode ? '#42a5f5' : '#115293'
+                            }
                           }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                      Színek:
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-                      {result?.colors && result.colors.map((color, index) => (
-                        <Tooltip key={index} title={color} arrow>
-                          <ColorBox color={color} />
-                        </Tooltip>
-                      ))}
-                    </Box>
-                  </Box>
-                  
-                  <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      startIcon={<CheckCircleIcon />}
-                      onClick={() => {
-                        handleUseResults();
-                        setResultDialogOpen(false);
-                      }}
-                      fullWidth
-                      sx={{ 
-                        py: 1.5,
-                        backgroundColor: '#4caf50',
-                        '&:hover': {
-                          backgroundColor: '#388e3c'
-                        }
-                      }}
-                    >
-                      Eredmények felhasználása
-                    </Button>
-                    
-                    <Button
-                      variant="outlined"
-                      onClick={() => setResultDialogOpen(false)}
-                      fullWidth
-                      sx={{ 
-                        py: 1.5,
-                        borderColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
-                        color: darkMode ? '#fff' : '#333'
-                      }}
-                    >
-                      Bezárás
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
-            </DialogContent>
-          </Dialog>
-  
-          {/* Snackbar értesítések */}
-          <Snackbar
-            open={snackbar.open}
-            autoHideDuration={6000}
-            onClose={handleCloseSnackbar}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          >
-            <Alert 
-              onClose={handleCloseSnackbar} 
-              severity={snackbar.severity} 
-              variant="filled"
-              sx={{ 
-                width: '100%',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-              }}
-            >
-              {snackbar.message}
-            </Alert>
-          </Snackbar>
-        </MotionBox>
-      </Container>
-    );
-  };
-  
-  // Segédfüggvény a megbízhatósági szín meghatározásához
-  const getConfidenceColor = (confidence, darkMode) => {
-    if (confidence >= 0.8) {
-      return darkMode ? '#4caf50' : '#4caf50';
-    } else if (confidence >= 0.6) {
-      return darkMode ? '#ffb74d' : '#ff9800';
-    } else {
-      return darkMode ? '#f44336' : '#f44336';
-    }
-  };
-  
-  // Segédfüggvény az API használati szín meghatározásához
-  const getApiUsageColor = (usageRatio, darkMode) => {
-    if (usageRatio < 0.5) {
-      return darkMode ? '#4caf50' : '#4caf50';
-    } else if (usageRatio < 0.8) {
-        return darkMode ? '#ffb74d' : '#ff9800';
-      } else {
-        return darkMode ? '#f44336' : '#f44336';
-      }
-    };
+                        >
+                          Értettem
+                        </Button>
+                      </DialogContent>
+                       </Dialog>
+                 
+                       {/* Eredmény dialógus */}
+                       <Dialog
+                         open={resultDialogOpen}
+                         onClose={() => setResultDialogOpen(false)}
+                         maxWidth="md"
+                         fullWidth
+                         PaperProps={{
+                           sx: {
+                             backgroundColor: paperBgColor,
+                             borderRadius: 2,
+                             boxShadow: darkMode 
+                               ? '0 8px 32px rgba(0,0,0,0.5)' 
+                               : '0 8px 32px rgba(0,0,0,0.1)',
+                           }
+                         }}
+                       >
+                         <DialogTitle sx={{ 
+                           color: '#4caf50',
+                           borderBottom: '1px solid',
+                           borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                           pb: 2
+                         }}>
+                           Stíluselemzés elkészült!
+                           <IconButton
+                             onClick={() => setResultDialogOpen(false)}
+                             sx={{
+                               position: 'absolute',
+                               top: 8,
+                               right: 8,
+                               color: darkMode ? '#aaa' : '#666'
+                             }}
+                           >
+                             <CloseIcon />
+                           </IconButton>
+                         </DialogTitle>
+                         
+                         <DialogContent sx={{ py: 3 }}>
+  <Grid container spacing={3}>
+    <Grid item xs={12} sm={5}>
+      <Box
+        component="img"
+        src={previewUrl}
+        alt="Elemzett kép"
+        sx={{ 
+          width: '100%', 
+          borderRadius: 2,
+          boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0,0,0,0.1)'
+        }}
+      />
+    </Grid>
     
-    export default VisionAdvisor;
-  
+    <Grid item xs={12} sm={7}>
+      <Typography variant="h6" gutterBottom sx={{ color: currentColors.primary }}>
+        Személyes stíluselemzés
+      </Typography>
+      
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: currentColors.text.secondary }}>
+          Színtípus:
+        </Typography>
+        <Typography variant="body1" sx={{ fontWeight: 500, color: currentColors.text.primary }}>
+          {result?.colorType}
+        </Typography>
+      </Box>
+      
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: currentColors.text.secondary }}>
+          Testalkat:
+        </Typography>
+        <Typography variant="body1" sx={{ fontWeight: 500, color: currentColors.text.primary }}>
+          {result?.bodyType}
+        </Typography>
+      </Box>
+      
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: currentColors.text.secondary }}>
+          Arcforma:
+        </Typography>
+        <Typography variant="body1" sx={{ fontWeight: 500, color: currentColors.text.primary }}>
+          {result?.faceShape}
+        </Typography>
+      </Box>
+      
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: currentColors.text.secondary }}>
+          Javasolt stílus:
+        </Typography>
+        <Typography variant="body1" sx={{ fontWeight: 500, color: currentColors.text.primary }}>
+          {result?.recommendedStyle}
+        </Typography>
+      </Box>
+      
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: currentColors.text.secondary }}>
+          Ajánlott színek:
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+          {result?.recommendedColors && result.recommendedColors.map((color, index) => (
+            <Tooltip key={index} title={color.name} arrow>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 1 }}>
+                <ColorSwatch color={color.hex} />
+                <Typography variant="caption" sx={{ mt: 0.5, color: currentColors.text.primary }}>
+                  {color.name}
+                </Typography>
+              </Box>
+            </Tooltip>
+                  ))}
+                </Box>
+              </Box>
+              
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => setResultDialogOpen(false)}
+                  fullWidth
+                  sx={{ 
+                    py: 1.5,
+                    backgroundColor: '#4caf50',
+                    '&:hover': {
+                      backgroundColor: '#388e3c'
+                    }
+                  }}
+                >
+                  Értettem
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+      </Dialog>
+
+      {/* Kijelentkezés megerősítő dialógus */}
+      <Dialog
+        open={showLogoutAlert}
+        onClose={() => setShowLogoutAlert(false)}
+        PaperProps={{
+          sx: {
+            backgroundColor: paperBgColor,
+            color: mainTextColor
+          }
+        }}
+      >
+        <DialogTitle>Kijelentkezés</DialogTitle>
+        <DialogContent>
+          <Typography>Biztosan ki szeretnél jelentkezni?</Typography>
+        </DialogContent>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+          <Button 
+            onClick={() => setShowLogoutAlert(false)} 
+            sx={{ mr: 1, color: mainTextColor }}
+          >
+            Mégse
+          </Button>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={confirmLogout}
+          >
+            Kijelentkezés
+          </Button>
+        </Box>
+      </Dialog>
+
+      {/* Snackbar értesítések */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity} 
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      <Box sx={{ 
+            backgroundColor: darkMode ? '#333' : '#f5f5f5',
+            backgroundImage: darkMode 
+              ? 'radial-gradient(#444 1px, transparent 1px)'
+              : 'radial-gradient(#e0e0e0 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+            pb: 8 
+          }}>
+          </Box>
+      <Footer />
+    </div>
+  );
+};
+
+// Segédfüggvény a megbízhatósági szín meghatározásához
+const getConfidenceColor = (confidence, darkMode) => {
+  if (confidence >= 0.8) {
+    return darkMode ? '#4caf50' : '#4caf50';
+  } else if (confidence >= 0.6) {
+    return darkMode ? '#ffb74d' : '#ff9800';
+  } else {
+    return darkMode ? '#f44336' : '#f44336';
+  }
+};
+
+export default PersonalStyleAdvisor;
+
+                 
 

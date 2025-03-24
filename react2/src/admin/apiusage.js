@@ -235,7 +235,9 @@ export default function ApiUsage() {
                         color: darkMode ? '#fff' : '#333',
                         fontWeight: 500 
                       }}>
-                        {api.api_name === 'vision_api' ? 'Google Vision API' : api.api_name}
+                       {api.api_name === 'vision_api' ? 'Google Vision API (1. fiók)' : 
+                       api.api_name === 'style_api' ? 'Google Vision API (2. fiók)' :    
+                        api.api_name}
                       </Typography>
                       <Tooltip title="Számláló nullázása">
                         <IconButton 
