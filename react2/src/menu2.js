@@ -45,6 +45,9 @@ const Menu = ({ sideMenuActive, toggleSideMenu }) => {
         <Button component={Link} to="/vinted" sx={{ textAlign:'center', fontSize: '20px', color: '#333' }}>
           Felhasznalók által feltöltött ruhák
         </Button>
+        <Button component={Link} to="/vision" sx={{ textAlign:'center', fontSize: '20px', color: '#333' }}>
+          Termék Tanácsadó
+        </Button>
         <Button component={Link} to="/rolunk" sx={{ textAlign:'center', fontSize: '20px', color: '#333' }}>
           Rólunk
         </Button>

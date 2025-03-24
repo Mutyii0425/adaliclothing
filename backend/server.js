@@ -789,7 +789,208 @@ app.post('/api/usage/reset', async (req, res) => {
 });
 
 
+const visionKeyFilePath2 = path.resolve('./vision-api-key2.json');
+console.log('Második Vision API kulcs elérési útja:', visionKeyFilePath2);
 
+// Inicializáljuk a második Vision API klienst
+let visionClient2;
+try {
+  visionClient2 = new ImageAnnotatorClient({
+    keyFilename: visionKeyFilePath2
+  });
+  console.log('Második Vision API kliens sikeresen inicializálva');
+} catch (error) {
+  console.error('Hiba a második Vision API kliens inicializálásakor:', error);
+}
+
+// Konfiguráljuk a multer-t a képfeltöltéshez
+const visionUpload2 = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+// API használat növelése a második Vision API-hoz
+async function incrementApiUsage2(apiName) {
+  try {
+    const query = `
+      INSERT INTO api_usage (api_name, usage_count, reset_date, last_updated)
+      VALUES (?, 1, DATE_ADD(CURRENT_DATE(), INTERVAL 1 MONTH), NOW())
+      ON DUPLICATE KEY UPDATE 
+        usage_count = usage_count + 1,
+        last_updated = NOW()
+    `;
+    
+    await db.query(query, [apiName]);
+    console.log(`${apiName} használati számláló növelve`);
+  } catch (error) {
+    console.error('Hiba az API használat növelésekor:', error);
+  }
+}
+
+// Kép elemzése feltöltött fájlból - új végpont
+app.post('/api/vision/analyze-file', visionUpload2.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nincs feltöltött kép' });
+    }
+    
+    // Növeljük az API használati számlálót
+    await incrementApiUsage2('vision_api2');
+    
+    // Vision API hívások a második kliensünkkel
+    const [labelResult] = await visionClient2.labelDetection(req.file.buffer);
+    const [objectResult] = await visionClient2.objectLocalization(req.file.buffer);
+    const [imagePropertiesResult] = await visionClient2.imageProperties(req.file.buffer);
+    
+    // Eredmények feldolgozása
+    const labels = labelResult.labelAnnotations || [];
+    const objects = objectResult.localizedObjectAnnotations || [];
+    const colors = imagePropertiesResult.imagePropertiesAnnotation?.dominantColors?.colors || [];
+    
+    // Ruházati kategóriák definíciója
+    const clothingCategories = [
+      { id: '1', name: 'Sapkák', keywords: ['sapka', 'kalap', 'fejfedő', 'hat', 'cap', 'beanie'] },
+      { id: '2', name: 'Nadrágok', keywords: ['nadrág', 'farmer', 'pants', 'jeans', 'trousers', 'shorts', 'rövidnadrág'] },
+      { id: '3', name: 'Zoknik', keywords: ['zokni', 'sock', 'socks', 'harisnya'] },
+      { id: '4', name: 'Pólók', keywords: ['póló', 't-shirt', 'shirt', 'tshirt', 'top'] },
+      { id: '5', name: 'Pulloverek', keywords: ['pulóver', 'pulcsi', 'sweater', 'sweatshirt', 'hoodie', 'kapucnis'] },
+      { id: '6', name: 'Kabátok', keywords: ['kabát', 'dzseki', 'coat', 'jacket', 'blazer', 'overcoat'] },
+      { id: '7', name: 'Lábviseletek', keywords: ['cipő', 'bakancs', 'csizma', 'szandál', 'shoe', 'boot', 'footwear', 'sneaker', 'sandal'] },
+      { id: '8', name: 'Atléták', keywords: ['atléta', 'trikó', 'tank top', 'sleeveless'] },
+      { id: '9', name: 'Kiegészítők', keywords: ['kiegészítő', 'accessory', 'öv', 'belt', 'nyaklánc', 'necklace', 'karkötő', 'bracelet'] },
+      { id: '10', name: 'Szoknyák', keywords: ['szoknya', 'skirt'] },
+      { id: '11', name: 'Alsóneműk', keywords: ['alsónemű', 'underwear', 'boxer', 'bugyi', 'melltartó', 'bra'] },
+      { id: '12', name: 'Mellények', keywords: ['mellény', 'vest', 'waistcoat'] }
+    ];
+    
+    // Minden ruházati kulcsszó összegyűjtése
+    const allClothingKeywords = clothingCategories.flatMap(category => category.keywords);
+    
+    // Ellenőrizzük, hogy van-e ruházati termék a képen
+    const hasClothingItem = labels.some(label => 
+      allClothingKeywords.some(keyword => 
+        label.description.toLowerCase().includes(keyword)
+      )
+    ) || objects.some(object => 
+      allClothingKeywords.some(keyword => 
+        object.name.toLowerCase().includes(keyword)
+      )
+    );
+    
+    // Ha nincs ruházati termék, adjunk vissza hibaüzenetet
+    if (!hasClothingItem) {
+      return res.status(400).json({
+        error: 'Nem sikerült ruházati terméket felismerni a képen',
+        isImageError: true,
+        fallback: getFallbackResponse()
+      });
+    }
+    
+    // Kategória meghatározása a felismert címkék alapján
+    let suggestedCategory = '4'; // Alapértelmezett: Pólók
+    let highestMatchScore = 0;
+    
+    // Minden címke és objektum vizsgálata
+    const allDetections = [
+      ...labels.map(label => ({ text: label.description.toLowerCase(), score: label.score })),
+      ...objects.map(obj => ({ text: obj.name.toLowerCase(), score: obj.score }))
+    ];
+    
+    // Kategóriák ellenőrzése
+    for (const category of clothingCategories) {
+      for (const detection of allDetections) {
+        for (const keyword of category.keywords) {
+          if (detection.text.includes(keyword)) {
+            // Ha a pontszám magasabb, mint az eddigi legjobb, frissítjük a javasolt kategóriát
+            if (detection.score > highestMatchScore) {
+              highestMatchScore = detection.score;
+              suggestedCategory = category.id;
+              console.log(`Kategória találat: ${category.name} (${category.id}), kulcsszó: ${keyword}, pontszám: ${detection.score}`);
+            }
+          }
+        }
+      }
+    }
+    
+    // Leírás generálása a felismert kategória alapján
+    const categoryDescriptions = {
+      '1': 'Stílusos sapka, amely tökéletesen kiegészíti öltözékedet. Kényelmes viselet minden évszakban.',
+      '2': 'Kényelmes szabású nadrág, amely tökéletes választás a mindennapokra. Tartós anyagból készült.',
+      '3': 'Puha, kényelmes zokni, amely egész nap kellemes viseletet biztosít. Tartós anyagból készült.',
+      '4': 'Divatos póló, amely tökéletesen illeszkedik a testhez. Puha, kellemes tapintású anyagból készült.',
+      '5': 'Meleg, kényelmes pulóver, amely tökéletes választás a hűvösebb napokra. Puha anyagból készült.',
+      '6': 'Stílusos kabát, amely melegen tart a hideg időben. Tartós, minőségi anyagból készült.',
+      '7': 'Kényelmes lábbeli, amely egész nap kellemes viseletet biztosít. Strapabíró talppal rendelkezik.',
+      '8': 'Könnyű, szellős atléta, amely tökéletes választás a meleg napokra vagy sportoláshoz.',
+      '9': 'Divatos kiegészítő, amely tökéletesen kiegészíti öltözékedet és kiemeli stílusodat.',
+      '10': 'Divatos szoknya, amely kényelmes viseletet biztosít. Sokoldalúan kombinálható darab.',
+      '11': 'Kényelmes alsónemű, amely egész nap kellemes viseletet biztosít. Puha, bőrbarát anyagból készült.',
+      '12': 'Stílusos mellény, amely tökéletesen kiegészíti öltözékedet. Sokoldalúan kombinálható darab.'
+    };
+    
+    const suggestedDescription = categoryDescriptions[suggestedCategory] || 
+      'Kiváló minőségű ruhadarab. A termék kényelmes anyagból készült.';
+    
+    // Válasz összeállítása
+    res.json({
+      suggestedCategory,
+      suggestedDescription,
+      quality: 0.8,
+      tags: labels.slice(0, 5).map(label => label.description),
+      colors: colors.slice(0, 3).map(color => {
+        const rgb = color.color;
+        return `rgb(${rgb.red}, ${rgb.green}, ${rgb.blue})`;
+      }),
+      confidence: highestMatchScore || (labels.length > 0 ? labels[0].score : 0.7)
+    });
+  } catch (error) {
+    console.error('Hiba a kép elemzése során:', error);
+    res.status(500).json({
+      error: 'Hiba a kép elemzése során: ' + error.message,
+      fallback: getFallbackResponse()
+    });
+  }
+});
+
+// API használat lekérdezése a második Vision API-hoz
+app.get('/api/vision/usage2', (req, res) => {
+  try {
+    console.log('API usage request received for vision_api2');
+    
+    // Ellenőrizzük, hogy az adatbázis kapcsolat él-e
+    if (!db || db.state === 'disconnected') {
+      console.error('Adatbázis kapcsolat nem elérhető');
+      return res.status(500).json({ error: 'Adatbázis kapcsolat nem elérhető' });
+    }
+    
+    const query = 'SELECT * FROM api_usage WHERE api_name = "vision_api2"';
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error('Hiba az API használat lekérdezésekor:', err);
+        return res.status(500).json({ error: 'Adatbázis hiba: ' + err.message });
+      }
+      
+      console.log('Vision API2 usage data retrieved:', results);
+      res.json(results || []);
+    });
+  } catch (error) {
+    console.error('Váratlan hiba az API használat lekérdezésekor:', error);
+    res.status(500).json({ error: 'Szerver hiba: ' + error.message });
+  }
+});
+
+// API használat nullázása a második Vision API-hoz
+app.post('/api/vision/usage2/reset', async (req, res) => {
+  try {
+    await db.query(
+      'UPDATE api_usage SET usage_count = 0, reset_date = DATE_ADD(CURRENT_DATE(), INTERVAL 1 MONTH), last_updated = NOW() WHERE api_name = "vision_api2"'
+    );
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Hiba az API használat nullázásakor:', error);
+    res.status(500).json({ error: 'Adatbázis hiba' });
+  }
+});
 
 
 const port = 5000;

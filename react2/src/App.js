@@ -20,6 +20,7 @@ import Fiokom from './fiokom';
 import Rolunk from './rolunk';
 import ApiUsage from './admin/apiusage';
 import ResetPassword from './ResetPassword';
+import Vision from './vision';
 
 const App = () => {
   return (
@@ -45,6 +46,7 @@ const App = () => {
         <Route path="/rateadmin" element={<Rateadmin />} />
         <Route path="/fiokom" element={<Fiokom />} />
         <Route path="/rolunk" element={<Rolunk/>} />
+        <Route path="/vision" element={<Vision/>} />
         <Route path="/admin/apiusage" element={<ApiUsage />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         
