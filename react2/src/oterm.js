@@ -54,7 +54,7 @@ import Footer from './footer';
       const fetchProducts = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch('http://localhost:5000/termekek');
+          const response = await fetch('http://localhost:4000/termekek');
           const data = await response.json();
           await new Promise(resolve => setTimeout(resolve, 1500));
           setProducts(data);

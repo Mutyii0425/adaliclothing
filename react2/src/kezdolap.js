@@ -380,7 +380,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        const response = await fetch('http://localhost:5000/get-all-ratings');
+        const response = await fetch('http://localhost:4000/get-all-ratings');
         const data = await response.json();
         console.log('Fetched ratings:', data);
         setRatings(data || []);
