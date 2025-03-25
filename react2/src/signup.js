@@ -8,7 +8,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import logo from './fehlogo.png';
+import logo from './kep/fehlogo.png';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -17,7 +17,7 @@ import { Dialog } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import darkLogo from './logo02.png';
+import darkLogo from './kep/logo02.png';
 
 const randomColor = () => {
   const r = Math.floor(Math.random() * 256);
@@ -172,7 +172,7 @@ export default function SignUpForm() {
     }
     
     try {
-      const response = await fetch('http://localhost:4000/register', {
+      const response = await fetch('http://localhost:5000/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })

@@ -19,10 +19,6 @@ import {
   Switch,  
   MenuList,
   MenuItem
-  
-  
-  
-
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -31,9 +27,9 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate, Link } from 'react-router-dom';
 import Footer from './footer';
 import Menu from './menu2';
-import logo2 from './logo2.png';
-import mutyImage from './muty.jpeg';
-import adamImage from './adam.jpeg';
+import logo2 from './kep/logo2.png';
+import mutyImage from './kep/muty.jpeg';
+import adamImage from './kep/adam.jpeg';
 
 const StyledSection = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'darkMode'

@@ -30,7 +30,7 @@ import Footer from './footer';
 import Menu from './menu2';
 
 const imageMap = {};
-    const images = require.context('../../backend/kep', false, /\.(png|jpg|jpeg)$/);
+const images = require.context('../../adaliclothing-mvc/backend/kep', false, /\.(png|jpg|jpeg)$/);
     images.keys().forEach((key) => {
       const imageName = key.replace('./', '');
       imageMap[imageName] = images(key);

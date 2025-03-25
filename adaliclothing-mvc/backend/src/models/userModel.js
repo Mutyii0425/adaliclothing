@@ -51,7 +51,7 @@ class UserModel {
 
   async createResetToken(email) {
     const resetToken = crypto.randomBytes(20).toString('hex');
-    const resetExpires = new Date(Date.now() + 3600000).toISOString().slice(0, 19).replace('T', ' ');
+    const resetExpires = new Date(Date.now() + 7200000).toISOString().slice(0, 19).replace('T', ' ');
     
     await this.db.execute(
       'UPDATE user SET reset_token = ?, reset_expires = ? WHERE email = ?',
@@ -60,6 +60,7 @@ class UserModel {
     
     return resetToken;
   }
+
 
   async resetPasswordWithToken(token, newPassword) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);

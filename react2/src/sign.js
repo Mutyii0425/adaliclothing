@@ -9,7 +9,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import logo from './fehlogo.png';
+import logo from './kep/fehlogo.png';
 import { Card, CardContent } from '@mui/material';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -18,7 +18,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import darkLogo from './logo02.png';
+import darkLogo from './kep/logo02.png';
 import { Dialog, CircularProgress } from '@mui/material';
 
 const randomColor = () => {
@@ -168,7 +168,7 @@ export default function SignInForm() {
     setIsLoading(true); // Töltési állapot beállítása
     
     try {
-      const response = await fetch('http://localhost:4000/login', {
+      const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -221,7 +221,7 @@ export default function SignInForm() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:4000/forgot-password', {
+      const response = await fetch('http://localhost:5000/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

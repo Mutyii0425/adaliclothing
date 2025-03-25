@@ -132,7 +132,7 @@ const handleSubmitOrder = async () => {
       imageUrl: item.imageUrl // Csak az URL-t küldd, ne a teljes képet
     }));
 
-    const emailResponse = await fetch('http://localhost:4000/send-confirmation', {
+    const emailResponse = await fetch('http://localhost:5000/send-confirmation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

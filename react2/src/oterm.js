@@ -43,7 +43,7 @@ import Footer from './footer';
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const imageMap = {};
-    const images = require.context('../../backend/kep', false, /\.(png|jpg|jpeg)$/);
+    const images = require.context('../../adaliclothing-mvc/backend/kep', false, /\.(png|jpg|jpeg)$/);
     images.keys().forEach((key) => {
       const imageName = key.replace('./', '');
       imageMap[imageName] = images(key);
@@ -54,7 +54,7 @@ import Footer from './footer';
       const fetchProducts = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch('http://localhost:4000/termekek');
+          const response = await fetch('http://localhost:5000/termekek');
           const data = await response.json();
           await new Promise(resolve => setTimeout(resolve, 1500));
           setProducts(data);

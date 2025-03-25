@@ -22,12 +22,12 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import fek from './fekete.jpg';
-import polo from './polo.jpg';
-import vinted from './vinted.jpg';
-import polok from './polok.png';
-import pulcsik from './pulcsik.png';
-import gatyak from './gatyak.png';
+import fek from './kep/fekete.jpg';
+import polo from './kep/polo.jpg';
+import vinted from './kep/vinted.jpg';
+import polok from './kep/polok.png';
+import pulcsik from './kep/pulcsik.png';
+import gatyak from './kep/gatyak.png';
 import Footer from './footer';
 import Menu from './menu2';
 import { useInView } from 'react-intersection-observer';
@@ -380,7 +380,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        const response = await fetch('http://localhost:4000/get-all-ratings');
+        const response = await fetch('http://localhost:5000/get-all-ratings');
         const data = await response.json();
         console.log('Fetched ratings:', data);
         setRatings(data || []);
@@ -424,7 +424,7 @@ useEffect(() => {
   const saveCouponToDatabase = async (coupon) => {
     const userData = JSON.parse(localStorage.getItem('user'));
     try {
-      const response = await fetch('http://localhost:4000/update-coupon', {
+      const response = await fetch('http://localhost:5000/update-coupon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

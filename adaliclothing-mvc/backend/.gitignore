@@ -1,13 +1,12 @@
-# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 
-# Production
+Production
 /build
 /dist
 
-# Misc
+Misc
 .DS_Store
 .env
 .env.local
