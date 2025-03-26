@@ -134,21 +134,21 @@ export default function SignUpForm() {
   const navigate = useNavigate();
      
   const validateEmail = (email) => {
-    // Check if email contains exactly one @ symbol
+  
     const atSymbols = email.split('@').length - 1;
     return atSymbols === 1;
   };
   
   const validatePassword = (password) => {
-    // Check if password is at least 6 characters and contains at least one uppercase letter
+    
     return password.length >= 6 && /[A-Z]/.test(password);
   };
   
-  // Then modify the handleSubmit function:
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Email validation
+
     if (!validateEmail(email)) {
       setErrorTitle('Érvénytelen email cím');
       setErrorMessage('Az email cím formátuma nem megfelelő. Pontosan egy @ jelet tartalmazhat.');
@@ -156,7 +156,7 @@ export default function SignUpForm() {
       return;
     }
     
-    // Password validation
+   
     if (!validatePassword(password)) {
       setErrorTitle('Gyenge jelszó');
       setErrorMessage('A jelszónak legalább 6 karakterből kell állnia és tartalmaznia kell legalább egy nagybetűt.');
@@ -190,7 +190,7 @@ export default function SignUpForm() {
           navigate('/kezdolap');
         }, 2000);
       } else {
-        // Handle specific error cases with custom styling
+        
         if (data.error.includes('email már regisztrálva')) {
           setErrorTitle('Email már használatban');
           setErrorMessage('Ez az email cím már regisztrálva van a rendszerben. Kérjük, használj másik email címet vagy jelentkezz be.');

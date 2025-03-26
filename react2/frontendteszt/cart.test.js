@@ -8,7 +8,7 @@ describe('Kosár tesztek', function() {
   let loginPage;
   let cartPage;
 
-  // Teszt timeout beállítása
+  
   this.timeout(60000);
 
   before(async function() {
@@ -16,10 +16,10 @@ describe('Kosár tesztek', function() {
     loginPage = new LoginPage(driver);
     cartPage = new CartPage(driver);
     
-    // Bejelentkezés a tesztek előtt
+    
     await loginPage.navigate();
     await loginPage.login('teszt@example.com', 'jelszo123');
-    await driver.sleep(3000); // Várjunk a bejelentkezésre
+    await driver.sleep(3000); 
   });
 
   describe('Kosár funkciók', function() {
@@ -38,7 +38,7 @@ describe('Kosár tesztek', function() {
 
     it('Termék mennyiség növelése a kosárban', async function() {
       try {
-        // Csak akkor futtassuk, ha van termék a kosárban
+     
         const isEmpty = await cartPage.isCartEmpty();
         if (isEmpty) {
           console.log('A kosár üres, ezt a tesztet kihagyjuk');
@@ -62,7 +62,7 @@ describe('Kosár tesztek', function() {
 
     it('Termék mennyiség csökkentése a kosárban', async function() {
       try {
-        // Csak akkor futtassuk, ha van termék a kosárban
+       
         const isEmpty = await cartPage.isCartEmpty();
         if (isEmpty) {
           console.log('A kosár üres, ezt a tesztet kihagyjuk');
@@ -85,7 +85,7 @@ describe('Kosár tesztek', function() {
 
     it('Termék eltávolítása a kosárból', async function() {
       try {
-        // Csak akkor futtassuk, ha van termék a kosárban
+     
         const isEmpty = await cartPage.isCartEmpty();
         if (isEmpty) {
           console.log('A kosár üres, ezt a tesztet kihagyjuk');
@@ -108,7 +108,7 @@ describe('Kosár tesztek', function() {
 
     it('Továbblépés a fizetéshez', async function() {
       try {
-        // Csak akkor futtassuk, ha van termék a kosárban
+     
         const isEmpty = await cartPage.isCartEmpty();
         if (isEmpty) {
           console.log('A kosár üres, ezt a tesztet kihagyjuk');

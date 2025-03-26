@@ -2,14 +2,14 @@ const request = require('supertest');
 const express = require('express');
 const mysql = require('mysql');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('mysql');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 
-// Termékek lekérése végpont
+
 app.get('/products', (req, res) => {
   res.json([
     { id: 1, nev: 'Teszt termék 1', ar: 5000, leiras: 'Leírás 1', meret: 'M' },
@@ -17,22 +17,22 @@ app.get('/products', (req, res) => {
   ]);
 });
 
-// Termék feltöltése végpont
+
 app.post('/usertermekek', (req, res) => {
   res.json({ success: true, id: 1 });
 });
 
-// Termék törlése végpont
+
 app.delete('/products/:id', (req, res) => {
   res.json({ message: 'Termék sikeresen törölve' });
 });
 
-// Termék módosítása végpont
+
 app.put('/products/:id', (req, res) => {
   res.json({ message: 'Termék sikeresen frissítve' });
 });
 
-// Termék részleteinek lekérése végpont
+
 app.get('/products/:id', (req, res) => {
   res.json({
     id: 1,
@@ -47,7 +47,7 @@ app.get('/products/:id', (req, res) => {
 
 describe('Termékek kezelése', () => {
   beforeEach(() => {
-    // Mock adatbázis kapcsolat
+   
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, params, callback) => {
         if (typeof params === 'function') {

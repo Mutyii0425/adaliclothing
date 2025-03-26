@@ -9,31 +9,31 @@ class AuthController {
     const { name, email, password } = req.body;
     
     try {
-      // Check if email already exists
+     
       const existingEmail = await this.userModel.findByEmail(email);
       if (existingEmail) {
         return res.status(400).json({ error: 'Ez az email már regisztrálva van a rendszerben.' });
       }
       
-      // Check if username already exists
+     
       const existingUsername = await this.userModel.findByUsername(name);
       if (existingUsername) {
         return res.status(400).json({ error: 'Ez a felhasználónév már foglalt.' });
       }
       
-      // Validate email format
+      
       if (email.split('@').length !== 2) {
         return res.status(400).json({ error: 'Az email cím formátuma nem megfelelő!' });
       }
       
-      // Validate password requirements
+      
       if (password.length < 6 || !/[A-Z]/.test(password)) {
               return res.status(400).json({ error: 'A jelszónak legalább 6 karakterből kell állnia és tartalmaznia kell legalább egy nagybetűt!' })
             }
 
             const user = await this.userModel.create({ name, email, password })
 
-            // Send confirmation email
+           
             const msg = {
               to: email,
               from: {
@@ -109,7 +109,7 @@ class AuthController {
           const { email } = req.body
     
           try {
-            // Check if user exists with this email
+          
             const user = await this.userModel.findByEmail(email)
             if (!user) {
               return res.status(404).json({ 
@@ -118,13 +118,11 @@ class AuthController {
               })
             }
 
-            // Clean up expired tokens
             await this.userModel.cleanupExpiredTokens()
       
-            // Generate reset token
+          
             const resetToken = await this.userModel.createResetToken(email)
 
-            // Send password reset email
             const msg = {
               to: email,
               from: {
@@ -180,7 +178,7 @@ class AuthController {
           }
     
           try {
-            // Check if token exists
+          
             const user = await this.userModel.findByResetToken(token)
       
             console.log('Token exists in database:', !!user)
@@ -192,7 +190,7 @@ class AuthController {
               })
             }
       
-            // Check if token is not expired
+           
             const validUser = await this.userModel.findValidResetToken(token)
       
             console.log('Token is valid and not expired:', !!validUser)
@@ -207,7 +205,7 @@ class AuthController {
               })
             }
       
-            // Validate new password
+           
             if (newPassword.length < 6 || !/[A-Z]/.test(newPassword)) {
               console.log('Invalid password format')
               return res.status(400).json({ 
@@ -216,7 +214,7 @@ class AuthController {
               })
             }
       
-            // Reset password
+          
             await this.userModel.resetPasswordWithToken(token, newPassword)
       
             console.log('Password successfully updated for user:', validUser.felhasznalonev)

@@ -2,14 +2,14 @@ const request = require('supertest');
 const express = require('express');
 const mysql = require('mysql');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('mysql');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json());
 
-// Kategóriák lekérése végpont
+
 app.get('/categories', (req, res) => {
   res.json([
     { cs_azonosito: 1, cs_nev: 'Sapkák' },
@@ -21,7 +21,7 @@ app.get('/categories', (req, res) => {
 
 describe('Kategóriák kezelése', () => {
   beforeEach(() => {
-    // Mock adatbázis kapcsolat
+
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, callback) => {
         if (query.includes('SELECT * FROM kategoriak')) {

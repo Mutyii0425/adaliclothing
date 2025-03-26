@@ -3,15 +3,15 @@ const express = require('express');
 const mysql = require('mysql');
 const vision = require('@google-cloud/vision');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('mysql');
 jest.mock('@google-cloud/vision');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 
-// Kép elemzése végpont
+
 app.post('/api/analyze-image', (req, res) => {
   res.json({
     suggestedCategory: '4',
@@ -23,21 +23,21 @@ app.post('/api/analyze-image', (req, res) => {
   });
 });
 
-// API használat lekérése végpont
+
 app.get('/api/usage', (req, res) => {
   res.json([
     { api_name: 'vision_api', usage_count: 10, limit_count: 1000, reset_date: '2023-12-31' }
   ]);
 });
 
-// API használat nullázása végpont
+
 app.post('/api/usage/reset', (req, res) => {
   res.json({ success: true });
 });
 
 describe('API használat', () => {
   beforeEach(() => {
-    // Mock adatbázis kapcsolat
+ 
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, params, callback) => {
         if (typeof params === 'function') {
@@ -57,7 +57,7 @@ describe('API használat', () => {
       })
     });
     
-    // Mock Vision API
+   
     vision.ImageAnnotatorClient.mockImplementation(() => ({
       labelDetection: jest.fn().mockResolvedValue([[{ labelAnnotations: [] }]]),
       objectLocalization: jest.fn().mockResolvedValue([[{ localizedObjectAnnotations: [] }]]),
@@ -66,7 +66,7 @@ describe('API használat', () => {
   });
 
   test('POST /api/analyze-image sikeresen elemzi a képet', async () => {
-    const imageData = 'data:image/jpeg;base64,...'; // Ide valódi base64 kódolt kép kerülne
+    const imageData = 'data:image/jpeg;base64,...';
     
     const response = await request(app)
       .post('/api/analyze-image')
@@ -110,20 +110,18 @@ describe('API használat', () => {
       .post('/api/analyze-image')
       .send({ image: invalidImageData });
     
-    // A valós alkalmazásban itt ellenőriznénk, hogy a megfelelő hibaüzenetet kapjuk-e
-    // De mivel a mock alkalmazásunk mindig sikeres választ ad, ezt nem tudjuk tesztelni
-    expect(true).toBe(true); // Placeholder
+    
+    expect(true).toBe(true); 
   });
   
   test('Kép elemzése ruházati termék nélküli kép esetén hibaüzenetet ad vissza', async () => {
-    const nonClothingImageData = 'data:image/jpeg;base64,...'; // Ide valódi base64 kódolt kép kerülne
+    const nonClothingImageData = 'data:image/jpeg;base64,...'; 
     
     const response = await request(app)
       .post('/api/analyze-image')
       .send({ image: nonClothingImageData });
     
-    // A valós alkalmazásban itt ellenőriznénk, hogy a megfelelő hibaüzenetet kapjuk-e
-    // De mivel a mock alkalmazásunk mindig sikeres választ ad, ezt nem tudjuk tesztelni
-    expect(true).toBe(true); // Placeholder
+  
+    expect(true).toBe(true); 
   });
 });

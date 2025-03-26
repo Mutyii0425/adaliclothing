@@ -8,7 +8,7 @@ describe('Hitelesítési tesztek', function() {
   let loginPage;
   let registerPage;
 
-  // Teszt timeout beállítása
+  
   this.timeout(60000);
 
   before(async function() {
@@ -23,10 +23,10 @@ describe('Hitelesítési tesztek', function() {
         await loginPage.navigate();
         await loginPage.login('teszt@example.com', 'jelszo123');
         
-        // Várjunk egy kicsit, hogy az átirányítás megtörténjen
+       
         await driver.sleep(3000);
         
-        // Készítsünk képernyőképet a bejelentkezés után
+      
         await takeScreenshot(driver, 'after-login');
         
         const currentUrl = await driver.getCurrentUrl();
@@ -44,22 +44,20 @@ describe('Hitelesítési tesztek', function() {
           await loginPage.navigate();
           await loginPage.login('hibas@example.com', 'hibas_jelszo');
           
-          // Várjunk egy kicsit, hogy a hibaüzenet megjelenjen
+          
           await driver.sleep(2000);
           
-          // Készítsünk képernyőképet a hibás bejelentkezés után
+        
           await takeScreenshot(driver, 'after-failed-login');
           
-          // Ellenőrizzük, hogy nem irányított át a kezdőlapra
+       
           const currentUrl = await driver.getCurrentUrl();
           console.log('Current URL after failed login:', currentUrl);
           
-          // Ellenőrizzük, hogy a bejelentkezési oldalon maradtunk-e
+      
           const isStillOnLoginPage = currentUrl.includes('/sign');
           assert(isStillOnLoginPage, 'A felhasználónak a bejelentkezési oldalon kellene maradnia');
-          
-          // Ha nem találtunk hibaüzenetet, de a bejelentkezési oldalon maradtunk,
-          // akkor is sikeresnek tekintjük a tesztet
+
           const errorMessage = await loginPage.getErrorMessage();
           console.log('Error message found:', errorMessage);
           

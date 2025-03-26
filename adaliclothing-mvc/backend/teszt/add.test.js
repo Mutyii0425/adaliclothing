@@ -1,13 +1,12 @@
 const request = require('supertest');
 const express = require('express');
-const mysql = require('mysql'); // Add this import
+const mysql = require('mysql'); 
 
-// Mock the mysql module
+
 jest.mock('mysql');
 
 const app = express();
 
-// Kategóriák lekérése
 app.get('/categories', (req, res) => {
   const mockCategories = [
     { cs_azonosito: 1, cs_nev: 'Sapkák' },
@@ -16,12 +15,12 @@ app.get('/categories', (req, res) => {
   res.json(mockCategories);
 });
 
-// Termék feltöltése
+
 app.post('/usertermekek', (req, res) => {
   res.json({ success: true, id: 1 });
 });
 
-// Kép elemzése
+
 app.post('/api/analyze-image', (req, res) => {
   res.json({
     suggestedCategory: '4',
@@ -35,13 +34,13 @@ app.post('/api/analyze-image', (req, res) => {
 
 describe('Kategóriák lekérése', () => {
   test('GET /categories sikeresen lekéri a kategóriákat', async () => {
-    // Mock adatok
+   
     const mockCategories = [
       { cs_azonosito: 1, cs_nev: 'Sapkák' },
       { cs_azonosito: 2, cs_nev: 'Nadrágok' }
     ];
     
-    // Mock adatbázis válasz
+    
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, callback) => {
         callback(null, mockCategories);
@@ -57,7 +56,7 @@ describe('Kategóriák lekérése', () => {
 
 describe('Termék feltöltés', () => {
   test('POST /usertermekek sikeresen feltölti a terméket', async () => {
-    // Teszt termék adatok
+ 
     const testProduct = {
       kategoriaId: 1,
       ar: 5000,
@@ -68,7 +67,7 @@ describe('Termék feltöltés', () => {
       images: ['data:image/jpeg;base64,...', 'data:image/jpeg;base64,...']
     };
     
-    // Mock adatbázis válasz
+   
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, params, callback) => {
         callback(null, { insertId: 1 });
@@ -87,10 +86,10 @@ describe('Termék feltöltés', () => {
 
 describe('Kép elemzés', () => {
   test('POST /api/analyze-image sikeresen elemzi a képet', async () => {
-    // Mock kép adat
-    const imageData = 'data:image/jpeg;base64,...'; // Ide valódi base64 kódolt kép kerülne
+   
+    const imageData = 'data:image/jpeg;base64,...';
     
-    // Mock Vision API válasz
+   
     jest.mock('@google-cloud/vision', () => ({
       ImageAnnotatorClient: jest.fn().mockImplementation(() => ({
         labelDetection: jest.fn().mockResolvedValue([[{ labelAnnotations: [] }]]),

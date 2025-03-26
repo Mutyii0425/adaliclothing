@@ -3,25 +3,25 @@ const express = require('express');
 const sgMail = require('@sendgrid/mail');
 const mysql = require('mysql2/promise');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('@sendgrid/mail');
 jest.mock('mysql2/promise');
 jest.mock('dotenv');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 
-// Rendelés visszaigazolás végpont
+
 app.post('/send-confirmation', (req, res) => {
   const { email, name, orderId, orderItems, shippingDetails, totalPrice, discount, shippingCost } = req.body;
   
-  // Ellenőrizzük, hogy minden szükséges adat megvan-e
+  
   if (!email || !name || !orderId || !orderItems || !shippingDetails) {
     return res.status(400).json({ error: 'Hiányzó adatok!' });
   }
   
-  // Email küldése
+
   sgMail.send({
     to: email,
     from: 'test@example.com',
@@ -29,20 +29,20 @@ app.post('/send-confirmation', (req, res) => {
     html: `<p>Kedves ${name}!</p><p>Köszönjük a rendelést!</p>`
   });
   
-  // Sikeres email küldés válasz
+
   res.json({ success: true });
 });
 
-// Rendelési statisztikák frissítése végpont
+
 app.post('/api/update-order-stats', (req, res) => {
   const { userId, orderAmount, orderDate } = req.body;
   
-  // Ellenőrizzük, hogy minden szükséges adat megvan-e
+  
   if (!userId || !orderAmount) {
     return res.status(400).json({ error: 'Hiányzó adatok!' });
   }
   
-  // Sikeres statisztika frissítés válasz
+  
   res.json({
     totalOrders: 5,
     totalAmount: 25000,
@@ -52,7 +52,7 @@ app.post('/api/update-order-stats', (req, res) => {
 
 describe('Rendelés visszaigazolás', () => {
   beforeEach(() => {
-    // Mock SendGrid
+   
     sgMail.setApiKey.mockReturnValue();
     sgMail.send.mockResolvedValue({});
   });
@@ -71,7 +71,7 @@ describe('Rendelés visszaigazolás', () => {
         city: 'Budapest',
         address: 'Teszt utca 1.'
       },
-      totalPrice: 11590, // 10000 + 1590 szállítási díj
+      totalPrice: 11590, 
       discount: 0,
       shippingCost: 1590
     };
@@ -89,7 +89,7 @@ describe('Rendelés visszaigazolás', () => {
     const incompleteOrderData = {
       email: 'teszt@example.com',
       name: 'Teszt Felhasználó'
-      // Hiányzó adatok
+    
     };
     
     const response = await request(app)
@@ -104,17 +104,17 @@ describe('Rendelés visszaigazolás', () => {
     const orderData = {
       email: 'teszt@example.com',
       name: 'Teszt Felhasználó',
-      orderId: 12345, // Szám formátum
+      orderId: 12345, 
       orderItems: [
-        { id: 1, nev: 'Teszt termék', ar: '5000', mennyiseg: '2', size: 'M' } // String formátumú számok
+        { id: 1, nev: 'Teszt termék', ar: '5000', mennyiseg: '2', size: 'M' }
       ],
       shippingDetails: {
         phoneNumber: '+36301234567',
-        zipCode: 1234, // Szám formátum
+        zipCode: 1234, 
         city: 'Budapest',
         address: 'Teszt utca 1.'
       },
-      totalPrice: '11590', // String formátum
+      totalPrice: '11590', 
       discount: '0',
       shippingCost: '1590'
     };
@@ -161,7 +161,7 @@ describe('Rendelés visszaigazolás', () => {
 
 describe('Rendelési statisztikák', () => {
   beforeEach(() => {
-    // Mock mysql
+  
     mysql.createConnection.mockResolvedValue({
       execute: jest.fn().mockImplementation((query, params) => {
         if (query.includes('SELECT')) {
@@ -195,7 +195,7 @@ describe('Rendelési statisztikák', () => {
   test('POST /api/update-order-stats hibát ad vissza hiányzó adatok esetén', async () => {
     const incompleteStatsData = {
       userId: 1
-      // Hiányzó orderAmount
+    
     };
     
     const response = await request(app)
@@ -208,8 +208,8 @@ describe('Rendelési statisztikák', () => {
   
   test('POST /api/update-order-stats kezelni tudja a különböző formátumú adatokat', async () => {
     const statsData = {
-      userId: '1', // String formátum
-      orderAmount: '10000', // String formátum
+      userId: '1', 
+      orderAmount: '10000', 
       orderDate: new Date().toISOString()
     };
     
@@ -233,16 +233,6 @@ describe('Rendelési statisztikák', () => {
       .post('/api/update-order-stats')
       .send(statsData);
     
-    // Ellenőrizzük, hogy a totalOrders és totalAmount értékek helyesek-e
-    // A mock adatbázis válasz alapján:
-    // - 2 meglévő rendelés (a mock válaszban)
-    // - 1 új rendelés (amit most küldünk)
-    // - Meglévő rendelések összege: 5000*2 + 6000*1 = 16000
-    // - Új rendelés összege: 10000
-    // - Teljes összeg: 16000 + 10000 = 26000
-    
-    // Mivel a mock alkalmazásunk fix értékeket ad vissza, nem tudjuk ténylegesen
-    // ellenőrizni a számítást, de a valós alkalmazásban ez működne
     expect(response.body.totalOrders).toBe(5);
     expect(response.body.totalAmount).toBe(25000);
   });
@@ -250,20 +240,20 @@ describe('Rendelési statisztikák', () => {
 
 describe('Integrációs tesztek', () => {
   beforeEach(() => {
-    // Mock mysql
+
     mysql.createConnection.mockResolvedValue({
       execute: jest.fn().mockImplementation((query, params) => {
         return [[]];
       })
     });
     
-    // Mock SendGrid
+   
     sgMail.setApiKey.mockReturnValue();
     sgMail.send.mockResolvedValue({});
   });
 
   test('Rendelés és statisztika frissítés folyamat', async () => {
-    // 1. Rendelés visszaigazolás
+   
     const orderData = {
       email: 'teszt@example.com',
       name: 'Teszt Felhasználó',
@@ -289,7 +279,6 @@ describe('Integrációs tesztek', () => {
     expect(orderResponse.status).toBe(200);
     expect(orderResponse.body).toHaveProperty('success', true);
     
-    // 2. Rendelési statisztikák frissítése
     const statsData = {
       userId: 1,
       orderAmount: 10000,
@@ -308,29 +297,27 @@ describe('Integrációs tesztek', () => {
 
 describe('Hibaesetek kezelése', () => {
   beforeEach(() => {
-    // Mock SendGrid hibák
+   
     sgMail.send.mockRejectedValue(new Error('Email küldési hiba!'));
     
-    // Mock mysql hibák
+  
     mysql.createConnection.mockRejectedValue(new Error('Adatbázis hiba!'));
   });
 
   test('Email küldési hiba kezelése', async () => {
-    // Ez a teszt a valós implementációban ellenőrizné, hogy az email küldési hiba
-    // megfelelően van-e kezelve, de a mock alkalmazásunkban ez nem lehetséges
-    expect(true).toBe(true); // Placeholder
+   
+    expect(true).toBe(true); 
   });
   
   test('Adatbázis hiba kezelése statisztikák frissítésénél', async () => {
-    // Ez a teszt a valós implementációban ellenőrizné, hogy az adatbázis hiba
-    // megfelelően van-e kezelve, de a mock alkalmazásunkban ez nem lehetséges
-    expect(true).toBe(true); // Placeholder
+   
+    expect(true).toBe(true); 
   });
 });
 
 describe('Teljesítmény tesztek', () => {
   beforeEach(() => {
-    // Mock függőségek
+  
     sgMail.send.mockResolvedValue({});
     mysql.createConnection.mockResolvedValue({
       execute: jest.fn().mockResolvedValue([[]])
@@ -338,7 +325,7 @@ describe('Teljesítmény tesztek', () => {
   });
 
   test('Nagy mennyiségű adat kezelése rendelés visszaigazolásnál', async () => {
-    // Sok termékkel rendelkező rendelés
+ 
     const largeOrderData = {
       email: 'teszt@example.com',
       name: 'Teszt Felhasználó',
@@ -371,6 +358,6 @@ describe('Teljesítmény tesztek', () => {
     const executionTime = endTime - startTime;
     
     expect(response.status).toBe(200);
-    expect(executionTime).toBeLessThan(1000); // Elvárjuk, hogy 1 másodpercnél rövidebb idő alatt fusson le
+    expect(executionTime).toBeLessThan(1000); 
   });
 });

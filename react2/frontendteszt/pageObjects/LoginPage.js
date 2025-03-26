@@ -26,7 +26,7 @@ class LoginPage {
 
   async getErrorMessage() {
     try {
-      // Először próbáljuk meg a data-testid attribútummal ellátott elemeket keresni
+   
       const errorSelectors = [
         By.css('[data-testid="login-error-alert"]'),
         By.css('[data-testid="login-error-message"]'),
@@ -41,12 +41,11 @@ class LoginPage {
           console.log('Found error message with data-testid:', text);
           return text;
         } catch (e) {
-          // Folytatjuk a következő szelektorral
+     
         }
       }
       
-      // Ha nem találtuk meg a data-testid attribútummal ellátott elemeket,
-      // próbáljuk meg a régi módszerrel
+   
       const possibleErrorSelectors = [
         '.MuiCardContent-root',
         '.error-message',
@@ -64,7 +63,7 @@ class LoginPage {
             return text;
           }
         } catch (e) {
-          // Folytatjuk a következő szelektorral
+         
         }
       }
       

@@ -3,7 +3,6 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const sgMail = require('@sendgrid/mail');
 
-// Mock-oljuk a függőségeket
 jest.mock('bcrypt');
 jest.mock('@sendgrid/mail');
 jest.mock('mysql2/promise');
@@ -11,11 +10,10 @@ jest.mock('mysql2/promise');
 const app = express();
 app.use(express.json());
 
-// Regisztráció végpont
+
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  
-  // Sikeres regisztráció válasz
+
   res.status(201).json({ 
     message: 'Sikeres regisztráció!',
     user: {
@@ -25,11 +23,9 @@ app.post('/register', (req, res) => {
   });
 });
 
-// Bejelentkezés végpont
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   
-  // Sikeres bejelentkezés válasz
   res.json({ 
     success: true,
     message: 'Sikeres bejelentkezés!',
@@ -41,12 +37,12 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Rendelés visszaigazolás végpont
+
 app.post('/send-confirmation', (req, res) => {
   res.json({ success: true });
 });
 
-// Kupon frissítés végpont
+
 app.post('/update-coupon', (req, res) => {
   res.json({ 
     success: true,
@@ -56,21 +52,21 @@ app.post('/update-coupon', (req, res) => {
 
 describe('Regisztráció', () => {
   test('POST /register sikeresen regisztrálja a felhasználót', async () => {
-    // Mock bcrypt
+    
     bcrypt.hash.mockResolvedValue('hashedpassword123');
     
-    // Mock mysql
+    
     const mockDb = {
       execute: jest.fn().mockImplementation((query, params) => {
         if (query.includes('SELECT')) {
-          return [[]]; // Nincs még ilyen email
+          return [[]]; 
         } else if (query.includes('INSERT')) {
-          return [{ insertId: 1 }]; // Sikeres beszúrás
+          return [{ insertId: 1 }]; 
         }
       })
     };
     
-    // Mock SendGrid
+ 
     sgMail.send.mockResolvedValue({});
     
     const userData = {
@@ -90,8 +86,7 @@ describe('Regisztráció', () => {
   });
   
   test('POST /register hibát ad vissza, ha az email már létezik', async () => {
-    // Ez a teszt a valós implementációban ellenőrizné a duplikált email hibát
-    // Itt csak demonstrációs célból szerepel
+   
     expect(true).toBe(true);
   });
 });
@@ -117,7 +112,7 @@ describe('Bejelentkezés', () => {
 
 describe('Rendelés visszaigazolás', () => {
   test('POST /send-confirmation sikeresen elküldi a visszaigazoló emailt', async () => {
-    // Mock SendGrid
+   
     sgMail.send.mockResolvedValue({});
     
     const orderData = {

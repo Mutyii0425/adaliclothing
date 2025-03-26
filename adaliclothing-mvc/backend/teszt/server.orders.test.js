@@ -2,14 +2,14 @@ const request = require('supertest');
 const express = require('express');
 const mysql = require('mysql');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('mysql');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json());
 
-// Vevő létrehozása végpont
+
 app.post('/vevo/create', (req, res) => {
   res.json({ 
     success: true,
@@ -17,7 +17,7 @@ app.post('/vevo/create', (req, res) => {
   });
 });
 
-// Rendelés létrehozása végpont
+
 app.post('/orders/create', (req, res) => {
   res.json({ 
     success: true,
@@ -25,7 +25,7 @@ app.post('/orders/create', (req, res) => {
   });
 });
 
-// Rendelési statisztikák lekérése végpont
+
 app.get('/api/order-stats/:userId', (req, res) => {
   res.json({
     totalOrders: 5,
@@ -34,7 +34,7 @@ app.get('/api/order-stats/:userId', (req, res) => {
   });
 });
 
-// Rendelési statisztikák frissítése végpont
+
 app.post('/api/update-order-stats', (req, res) => {
   res.json({
     totalOrders: 5,
@@ -45,7 +45,7 @@ app.post('/api/update-order-stats', (req, res) => {
 
 describe('Rendelések kezelése', () => {
   beforeEach(() => {
-    // Mock adatbázis kapcsolat
+    
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, params, callback) => {
         if (typeof params === 'function') {

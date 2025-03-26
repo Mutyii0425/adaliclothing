@@ -141,7 +141,7 @@ const AboutUs = () => {
   };
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
-  // Animált megjelenés
+ 
   const fadeIn = {
     opacity: 0,
     animation: 'fadeIn 0.8s forwards',
@@ -162,7 +162,7 @@ const AboutUs = () => {
       minHeight: '100vh',
       transition: 'all 0.3s ease-in-out'
     }}>
-      {/* Side Menu */}
+      
       <Box
         sx={{
           position: 'fixed',
@@ -199,9 +199,9 @@ const AboutUs = () => {
         position: 'relative',
         width: '100%',
         boxSizing: 'border-box',
-        borderBottom: '3px solid #ffffff', // Add this border style
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Add shadow for better separation
-        marginBottom: '10px', // Add some space below the header
+        borderBottom: '3px solid #ffffff', 
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
+        marginBottom: '10px', 
       }}
     >
       <IconButton
@@ -216,9 +216,9 @@ const AboutUs = () => {
            sx={{
              fontWeight: 'bold',
              fontSize: {
-              xs: '1.1rem',    // Increased size for mobile
-              sm: '1.5rem',    // Tablet size stays the same
-              md: '2rem'       // Desktop size stays the same
+              xs: '1.1rem',    
+              sm: '1.5rem',    
+              md: '2rem'       
             },
              textAlign: 'center',
              color: 'white',
@@ -278,7 +278,7 @@ const AboutUs = () => {
   disablePortal
   sx={{ 
     zIndex: 1300,
-    mt: 1, // Margin top for spacing
+    mt: 1, 
     '& .MuiPaper-root': {
       overflow: 'hidden',
       borderRadius: '12px',
@@ -375,12 +375,12 @@ const AboutUs = () => {
 <Box sx={{ 
   display: 'flex', 
   justifyContent: {
-    xs: 'flex-end',  // Telefonos nézetben jobbra igazítás
-    sm: 'flex-end'   // Nagyobb képernyőkön is jobbra igazítás
+    xs: 'flex-end', 
+    sm: 'flex-end'  
   },
   gap: {
-    xs: '5px',       // Telefonos nézetben kisebb távolság a gombok között
-    sm: '10px'       // Nagyobb képernyőkön nagyobb távolság
+    xs: '5px',      
+    sm: '10px'       
   }
 }}>
   <Button
@@ -461,7 +461,7 @@ const AboutUs = () => {
           sx={{ color: darkMode ? 'white' : 'black' }}
         />
       </FormGroup>
-      {/* Hero Section */}
+     
       <StyledSection darkMode={darkMode}>
         <Container maxWidth="lg">
           <Box sx={{ 
@@ -714,7 +714,7 @@ const AboutUs = () => {
         </Container>
       </Box>
 
-      {/* Team Section */}
+     
       <StyledSection darkMode={darkMode}>
         <Container maxWidth="lg">
           <Box sx={{ 

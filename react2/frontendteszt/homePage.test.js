@@ -8,7 +8,7 @@ describe('Kezdőlap tesztek', function() {
   let homePage;
   let loginPage;
 
-  // Teszt timeout beállítása
+
   this.timeout(60000);
 
   before(async function() {
@@ -40,7 +40,7 @@ describe('Kezdőlap tesztek', function() {
         await homePage.closeSideMenu();
         await takeScreenshot(driver, 'sidemenu-closed');
         
-        // Itt nincs konkrét ellenőrzés, csak azt nézzük, hogy nem dob hibát
+        
       } catch (error) {
         await takeScreenshot(driver, 'sidemenu-toggle-error');
         throw error;
@@ -70,19 +70,19 @@ describe('Kezdőlap tesztek', function() {
         await homePage.navigate();
         await homePage.login();
         
-        // Várjunk egy kicsit, hogy az átirányítás megtörténjen
+        
         await driver.sleep(3000);
         await takeScreenshot(driver, 'after-login-from-homepage');
         
-        // Ellenőrizzük, hogy a bejelentkezési oldalra kerültünk-e
+       
         const currentUrl = await driver.getCurrentUrl();
         assert(currentUrl.includes('/sign'), 'A felhasználónak a bejelentkezési oldalra kell kerülnie');
         
-        // Jelentkezzünk be
+       
         await loginPage.login('teszt@example.com', 'jelszo123');
         await driver.sleep(3000);
         
-        // Térjünk vissza a kezdőlapra
+      
         await homePage.navigate();
       } catch (error) {
         await takeScreenshot(driver, 'login-from-homepage-error');
@@ -95,11 +95,11 @@ describe('Kezdőlap tesztek', function() {
         await homePage.navigate();
         await homePage.logout();
         
-        // Várjunk egy kicsit, hogy az átirányítás megtörténjen
+     
         await driver.sleep(3000);
         await takeScreenshot(driver, 'after-logout-from-homepage');
         
-        // Ellenőrizzük, hogy a bejelentkezési oldalra kerültünk-e
+      
         const currentUrl = await driver.getCurrentUrl();
         assert(currentUrl.includes('/sign'), 'A felhasználónak a bejelentkezési oldalra kell kerülnie kijelentkezés után');
       } catch (error) {
@@ -200,11 +200,11 @@ describe('Kezdőlap tesztek', function() {
       try {
         await homePage.navigate();
         
-        // Várjunk a carousel animációra
+  
         await homePage.waitForCarouselAnimation();
         await takeScreenshot(driver, 'after-carousel-animation');
         
-        // Itt nincs konkrét ellenőrzés, csak azt nézzük, hogy nem dob hibát
+       
       } catch (error) {
         await takeScreenshot(driver, 'carousel-animation-error');
         throw error;
@@ -218,12 +218,12 @@ describe('Kezdőlap tesztek', function() {
         const couponResult = await homePage.spinCoupon();
         await takeScreenshot(driver, 'after-spin-coupon');
         
-        // Ha van kupon eredmény, akkor ellenőrizzük
+  
         if (couponResult) {
           assert(couponResult.length > 0, 'A kupon sorsológépnek eredményt kell adnia');
         }
         
-        // Zárjuk be a kupon ablakot, ha még nyitva van
+      
         await homePage.closeCouponDialog();
       } catch (error) {
         await takeScreenshot(driver, 'spin-coupon-error');

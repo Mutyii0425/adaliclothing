@@ -10,7 +10,7 @@ describe('Fizetési folyamat tesztek', function() {
   let cartPage;
   let checkoutPage;
 
-  // Teszt timeout beállítása
+  
   this.timeout(60000);
 
   before(async function() {
@@ -19,27 +19,25 @@ describe('Fizetési folyamat tesztek', function() {
     cartPage = new CartPage(driver);
     checkoutPage = new CheckoutPage(driver);
     
-    // Bejelentkezés a tesztek előtt
     await loginPage.navigate();
     await loginPage.login('teszt@example.com', 'jelszo123');
-    await driver.sleep(3000); // Várjunk a bejelentkezésre
+    await driver.sleep(3000); 
   });
 
   describe('Checkout folyamat', function() {
     it('Checkout oldal betöltése a kosárból', async function() {
       try {
-        // Először a kosár oldalra navigálunk
+      
         await cartPage.navigate();
         
-        // Ellenőrizzük, hogy van-e termék a kosárban
+        
         const isEmpty = await cartPage.isCartEmpty();
         if (isEmpty) {
           console.log('A kosár üres, ezt a tesztet kihagyjuk');
           this.skip();
           return;
         }
-        
-        // Továbblépés a fizetéshez
+
         await cartPage.proceedToCheckout();
         await takeScreenshot(driver, 'checkout-page-loaded');
         
@@ -53,7 +51,7 @@ describe('Fizetési folyamat tesztek', function() {
 
     it('Szállítási adatok kitöltése', async function() {
       try {
-        // Közvetlenül a checkout oldalra navigálunk
+       
         await checkoutPage.navigate();
         
         const shippingDetails = {
@@ -67,7 +65,7 @@ describe('Fizetési folyamat tesztek', function() {
         await checkoutPage.fillShippingDetails(shippingDetails);
         await takeScreenshot(driver, 'after-filling-shipping-details');
         
-        // Itt nincs konkrét ellenőrzés, csak azt nézzük, hogy nem dob hibát
+       
       } catch (error) {
         await takeScreenshot(driver, 'fill-shipping-details-error');
         throw error;
@@ -76,7 +74,7 @@ describe('Fizetési folyamat tesztek', function() {
 
     it('Fizetési mód kiválasztása', async function() {
       try {
-        // Közvetlenül a checkout oldalra navigálunk, ha még nem ott lennénk
+        
         const currentUrl = await driver.getCurrentUrl();
         if (!currentUrl.includes('/checkout')) {
           await checkoutPage.navigate();
@@ -85,7 +83,7 @@ describe('Fizetési folyamat tesztek', function() {
         await checkoutPage.selectPaymentMethod('cash');
         await takeScreenshot(driver, 'after-selecting-payment-method');
         
-        // Itt nincs konkrét ellenőrzés, csak azt nézzük, hogy nem dob hibát
+        
       } catch (error) {
         await takeScreenshot(driver, 'select-payment-method-error');
         throw error;
@@ -94,12 +92,12 @@ describe('Fizetési folyamat tesztek', function() {
 
     it('Rendelés leadása', async function() {
       try {
-        // Közvetlenül a checkout oldalra navigálunk, ha még nem ott lennénk
+        
         const currentUrl = await driver.getCurrentUrl();
         if (!currentUrl.includes('/checkout')) {
           await checkoutPage.navigate();
           
-          // Töltsük ki újra az adatokat
+        
           const shippingDetails = {
             name: 'Teszt Felhasználó',
             address: 'Teszt utca 123',

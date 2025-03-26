@@ -93,10 +93,10 @@ class UserModel {
   }
 
   async deleteUser(userId) {
-    // Először töröljük a kapcsolódó értékeléseket
+
     await this.db.execute('DELETE FROM ratings WHERE f_azonosito = ?', [userId]);
     
-    // Majd töröljük a felhasználót
+ 
     await this.db.execute('DELETE FROM user WHERE f_azonosito = ?', [userId]);
   }
 }

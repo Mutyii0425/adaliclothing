@@ -2,14 +2,14 @@ const request = require('supertest');
 const express = require('express');
 const mysql = require('mysql');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('mysql');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json());
 
-// Értékelések lekérése végpont
+
 app.get('/get-all-ratings', (req, res) => {
   res.json([
     { rating_id: 1, rating: 5, date: '2023-01-01', velemeny: 'Nagyon jó!', felhasznalonev: 'Teszt Felhasználó' },
@@ -17,29 +17,29 @@ app.get('/get-all-ratings', (req, res) => {
   ]);
 });
 
-// Értékelés mentése végpont
+
 app.post('/save-rating', (req, res) => {
   res.json({ success: true });
 });
 
-// Értékelés törlése végpont
+
 app.delete('/delete-rating/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// Értékelés módosítása végpont
+
 app.put('/update-rating/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// Értékelés hozzáadása végpont
+
 app.post('/add-rating', (req, res) => {
   res.json({ success: true });
 });
 
 describe('Értékelések kezelése', () => {
   beforeEach(() => {
-    // Mock adatbázis kapcsolat
+    
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, params, callback) => {
         if (typeof params === 'function') {

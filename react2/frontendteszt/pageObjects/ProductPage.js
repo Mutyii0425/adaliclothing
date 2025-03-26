@@ -5,29 +5,28 @@ class ProductPage {
   constructor(driver) {
     this.driver = driver;
     
-    // Product details elements
+   
     this.productTitle = By.css('h5.MuiTypography-root');
     this.productPrice = By.css('h6.MuiTypography-root');
     this.productDescription = By.css('p.MuiTypography-body1');
     this.productImage = By.css('img[alt]');
     
-    // Size selection and cart elements
+   
     this.sizeSelect = By.css('div[role="button"]');
     this.addToCartButton = By.xpath("//button[contains(text(), 'Kosárba')]");
     this.sizeError = By.css('p.MuiFormHelperText-root');
-    
-    // Success message elements
+   
     this.cartSuccessAlert = By.css('div[role="alert"]');
     this.continueShoppingButton = By.xpath("//button[contains(text(), 'Vásárlás folytatása')]");
     this.checkoutButton = By.xpath("//button[contains(text(), 'Rendelés leadása')]");
     
-    // UI control elements
+  
     this.menuButton = By.css('button:first-child');
     this.darkModeSwitch = By.css('input[type="checkbox"]');
     this.cartIcon = By.css('svg[data-testid="ShoppingCartIcon"]');
     this.profileButton = By.xpath("//button[contains(text(), 'Profil')]");
     
-    // Login alert elements
+  
     this.loginAlert = By.css('div[role="alert"]');
   }
 
@@ -48,20 +47,20 @@ class ProductPage {
 
   async selectSize(size) {
     try {
-      // Click on the size dropdown
+    
       const sizeDropdown = await this.driver.findElement(this.sizeSelect);
       await sizeDropdown.click();
       
-      // Wait for the dropdown menu to appear
+      
       await this.driver.sleep(1000);
       
-      // Select the size by name
+     
       const sizeOption = await this.driver.findElement(
         By.xpath(`//li[contains(text(), '${size}')]`)
       );
       await sizeOption.click();
       
-      // Wait for the dropdown to close
+   
       await this.driver.sleep(500);
     } catch (error) {
       console.error('Hiba a méret kiválasztása során:', error);
@@ -71,7 +70,7 @@ class ProductPage {
 
   async addToCart() {
     await waitAndClick(this.driver, this.addToCartButton);
-    await this.driver.sleep(1000); // Wait for the cart update
+    await this.driver.sleep(1000);
     return this;
   }
 
@@ -105,31 +104,31 @@ class ProductPage {
 
   async toggleDarkMode() {
     await waitAndClick(this.driver, this.darkModeSwitch);
-    await this.driver.sleep(500); // Wait for the UI to update
+    await this.driver.sleep(500); 
     return this;
   }
 
   async openSideMenu() {
     await waitAndClick(this.driver, this.menuButton);
-    await this.driver.sleep(500); // Wait for the menu to appear
+    await this.driver.sleep(500); 
     return this;
   }
 
   async closeSideMenu() {
     await waitAndClick(this.driver, this.menuButton);
-    await this.driver.sleep(500); // Wait for the menu to close
+    await this.driver.sleep(500); 
     return this;
   }
 
   async goToCart() {
     await waitAndClick(this.driver, this.cartIcon);
-    await this.driver.sleep(1000); // Wait for navigation
+    await this.driver.sleep(1000); 
     return this;
   }
 
   async openProfileMenu() {
     await waitAndClick(this.driver, this.profileButton);
-    await this.driver.sleep(500); // Wait for the menu to appear
+    await this.driver.sleep(500); 
     return this;
   }
 

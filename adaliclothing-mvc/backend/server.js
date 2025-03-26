@@ -27,11 +27,11 @@ const initDb = async () => {
 };
 
 
-const storage = multer.memoryStorage(); // Memóriában tárolja a fájlokat
+const storage = multer.memoryStorage(); 
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB méretkorlátozás
+    fileSize: 5 * 1024 * 1024, 
   }
 });
 
@@ -52,7 +52,7 @@ const startServer = async () => {
   const upload = multer({
     storage: storage,
     limits: {
-      fileSize: 1 * 1024 * 1024 // 1MB limit
+      fileSize: 1 * 1024 * 1024 
     }
   });
   
@@ -70,11 +70,11 @@ const startServer = async () => {
     next();
   });
 
-// Explicit módon adjuk meg a kulcsfájl elérési útját
+
 const keyFilePath = path.resolve('./vision-api-key.json');
 console.log('Vision API kulcs elérési útja:', keyFilePath);
 
-// Inicializáljuk a Vision API klienst
+
 let visionClient;
 try {
   visionClient = new ImageAnnotatorClient({
@@ -89,14 +89,14 @@ app.get('/api/usage', async (req, res) => {
   try {
     console.log('API usage request received');
     
-    // Ellenőrizzük, hogy az adatbázis kapcsolat él-e
+   
     if (!db) {
       console.error('Adatbázis kapcsolat nem elérhető');
       return res.status(500).json({ error: 'Adatbázis kapcsolat nem elérhető' });
     }
     
     try {
-      // Az összes API használati adat lekérdezése
+     
       const [results] = await db.execute('SELECT * FROM api_usage');
       
       console.log('API usage data retrieved:', results);
@@ -116,12 +116,12 @@ app.get('/api/usage', async (req, res) => {
 
 
 
-// Implementáljuk a /api/analyze-image végpontot a Vision API használatával
+
 app.post('/api/analyze-image', async (req, res) => {
   try {
     console.log('Kép elemzése kezdődik...');
     
-    // Ellenőrizzük, hogy a kép megfelelő formátumú-e
+   
     if (!req.body.image || !req.body.image.startsWith('data:image/')) {
       return res.status(400).json({
         error: 'Érvénytelen képformátum',
@@ -129,25 +129,25 @@ app.post('/api/analyze-image', async (req, res) => {
       });
     }
     
-    // Kép adatok kinyerése a base64 stringből
+   
     const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
     
     try {
-      // Növeljük az API használati számlálót
+      
       await incrementApiUsage('vision_api');
       
-      // Vision API kliens inicializálása
+      
       const visionClient = new vision.ImageAnnotatorClient({
         keyFilename: './vision-api-key.json'
       });
       
-      // Vision API hívások
+ 
       const [labelResult] = await visionClient.labelDetection(buffer);
       const [objectResult] = await visionClient.objectLocalization(buffer);
       const [imagePropertiesResult] = await visionClient.imageProperties(buffer);
       
-      // Eredmények feldolgozása
+    
       const labels = labelResult.labelAnnotations || [];
       const objects = objectResult.localizedObjectAnnotations || [];
       const colors = imagePropertiesResult.imagePropertiesAnnotation?.dominantColors?.colors || [];
@@ -167,10 +167,10 @@ app.post('/api/analyze-image', async (req, res) => {
         { id: '12', name: 'Mellények', keywords: ['mellény', 'vest', 'waistcoat'] }
       ];
       
-      // Minden ruházati kulcsszó összegyűjtése egy tömbbe
+      
       const allClothingKeywords = clothingCategories.flatMap(category => category.keywords);
       
-      // Ellenőrizzük, hogy van-e ruházati termék a képen
+    
       const hasClothingItem = labels.some(label => 
         allClothingKeywords.some(keyword => 
           label.description.toLowerCase().includes(keyword)
@@ -181,7 +181,7 @@ app.post('/api/analyze-image', async (req, res) => {
         )
       );
       
-      // Ha nincs ruházati termék, küldjünk vissza hibaüzenetet
+     
       if (!hasClothingItem) {
         return res.status(400).json({
           error: 'Nem sikerült ruházati terméket felismerni a képen. Kérjük, töltsön fel egy másik képet, amelyen jól látható a ruhadarab.',
@@ -190,22 +190,21 @@ app.post('/api/analyze-image', async (req, res) => {
         });
       }
       
-      // Kategória meghatározása a felismert címkék alapján
-      let suggestedCategory = '4'; // Alapértelmezett: Pólók
+     
+      let suggestedCategory = '4'; 
       let highestMatchScore = 0;
       
-      // Minden címke és objektum vizsgálata
+      
       const allDetections = [
         ...labels.map(label => ({ text: label.description.toLowerCase(), score: label.score })),
         ...objects.map(obj => ({ text: obj.name.toLowerCase(), score: obj.score }))
       ];
-      
-      // Kategóriák ellenőrzése
+  
       for (const category of clothingCategories) {
         for (const detection of allDetections) {
           for (const keyword of category.keywords) {
             if (detection.text.includes(keyword)) {
-              // Ha a pontszám magasabb, mint az eddigi legjobb, frissítjük a javasolt kategóriát
+            
               if (detection.score > highestMatchScore) {
                 highestMatchScore = detection.score;
                 suggestedCategory = category.id;
@@ -216,10 +215,10 @@ app.post('/api/analyze-image', async (req, res) => {
         }
       }
       
-      // Leírás generálása a felismert kategória alapján
+      
       let suggestedDescription = 'Kiváló minőségű ruhadarab. A termék kényelmes anyagból készült.';
       
-      // Kategória-specifikus leírások
+     
       const categoryDescriptions = {
         '1': 'Stílusos sapka, amely tökéletesen kiegészíti öltözékedet. Kényelmes viselet minden évszakban.',
         '2': 'Kényelmes szabású nadrág, amely tökéletes választás a mindennapokra. Tartós anyagból készült.',
@@ -235,12 +234,12 @@ app.post('/api/analyze-image', async (req, res) => {
         '12': 'Stílusos mellény, amely tökéletesen kiegészíti öltözékedet. Sokoldalúan kombinálható darab.'
       };
       
-      // Ha van specifikus leírás a kategóriához, használjuk azt
+      
       if (categoryDescriptions[suggestedCategory]) {
         suggestedDescription = categoryDescriptions[suggestedCategory];
       }
       
-      // Válasz összeállítása
+     
       const response = {
         suggestedCategory,
         suggestedDescription,
@@ -271,7 +270,7 @@ app.post('/api/analyze-image', async (req, res) => {
   }
 });
 
-// Fallback válasz függvény
+
 function getFallbackResponse() {
   return {
     suggestedCategory: '4',
@@ -284,7 +283,7 @@ function getFallbackResponse() {
 }
 
 
-// API használat növelése
+
 async function incrementApiUsage(apiName) {
 try {
   const query = `
@@ -302,7 +301,7 @@ try {
 }
 }
 
-// Segédfüggvény a színek összehasonlításához
+
 function isColorClose(color1, color2, threshold) {
   const distance = Math.sqrt(
     Math.pow(color1.red - color2.red, 2) +
@@ -312,12 +311,11 @@ function isColorClose(color1, color2, threshold) {
   return distance;
 }
 
-// API használat lekérdezése
 app.get('/api/usage', (req, res) => {
   try {
     console.log('API usage request received');
     
-    // Ellenőrizzük, hogy az adatbázis kapcsolat él-e
+    
     if (!db || db.state === 'disconnected') {
       console.error('Adatbázis kapcsolat nem elérhető');
       return res.status(500).json({ error: 'Adatbázis kapcsolat nem elérhető' });
@@ -339,7 +337,7 @@ app.get('/api/usage', (req, res) => {
   }
 });
 
-// API használat nullázása
+
 app.post('/api/usage/reset', async (req, res) => {
   try {
     const { apiName } = req.body;
@@ -358,7 +356,7 @@ app.post('/api/usage/reset', async (req, res) => {
 const visionKeyFilePath2 = path.resolve('./vision-api-key1.json');
 console.log('Második Vision API kulcs elérési útja:', visionKeyFilePath2);
 
-// Személyes stílustanácsadó végpontok
+
 
 app.post('/api/style/analyze-person', upload.single('image'), async (req, res) => {
   try {
@@ -375,24 +373,24 @@ app.post('/api/style/analyze-person', upload.single('image'), async (req, res) =
     
     console.log('Feltöltött fájl:', req.file.originalname, 'méret:', req.file.size, 'bytes');
     
-    // Növeljük az API használati számlálót
+    
     await incrementApiUsage('style_api');
     console.log('API használati számláló növelve: style_api');
     
     try {
       console.log('=== VISION API HÍVÁSOK KEZDŐDNEK ===');
       
-      // Vision API kliens inicializálása
+      
       console.log('Vision API kliens inicializálása...');
       const visionClient = new vision.ImageAnnotatorClient({
         keyFilename: './vision-api-key1.json'
       });
       console.log('Vision API kliens sikeresen inicializálva');
       
-      // A req.file.buffer helyett használjuk a req.file.path-t, ha a fájl a lemezre lett mentve
+  
       const imageContent = req.file.buffer || fs.readFileSync(req.file.path);
       
-      // Vision API hívások - Promise alapú megközelítés
+     
       console.log('Face Detection API hívás kezdődik...');
       try {
         const [faceDetectionResult] = await visionClient.faceDetection({
@@ -428,7 +426,7 @@ app.post('/api/style/analyze-person', upload.single('image'), async (req, res) =
       
       console.log('=== VISION API HÍVÁSOK BEFEJEZVE ===');
       
-      // Stílus elemzés generálása
+ 
       console.log('Stílus elemzés generálása...');
       const styleAnalysis = generateStyleAnalysis();
       
@@ -454,7 +452,7 @@ app.post('/api/style/analyze-person', upload.single('image'), async (req, res) =
   }
 });
 
-// Módosítsd a /api/style/analyze-base64 végpontot
+
 app.post('/api/style/analyze-base64', async (req, res) => {
   try {
     console.log('=== STÍLUS ELEMZÉS KEZDŐDIK (BASE64) ===');
@@ -468,26 +466,26 @@ app.post('/api/style/analyze-base64', async (req, res) => {
       });
     }
     
-    // Kép adatok kinyerése a base64 stringből
+
     const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
     console.log('Kép sikeresen dekódolva base64 formátumból');
     
-    // Növeljük az API használati számlálót
+   
     await incrementApiUsage('style_api');
     console.log('API használati számláló növelve: style_api');
     
     try {
       console.log('=== VISION API HÍVÁSOK KEZDŐDNEK ===');
       
-      // Vision API kliens inicializálása
+     
       console.log('Vision API kliens inicializálása...');
       const visionClient = new vision.ImageAnnotatorClient({
         keyFilename: './vision-api-key1.json'
       });
       console.log('Vision API kliens sikeresen inicializálva');
       
-      // Vision API hívások
+
       console.log('Face Detection API hívás kezdődik...');
       const [faceDetectionResult] = await visionClient.faceDetection(buffer);
       console.log('Face Detection API hívás sikeres!');
@@ -535,7 +533,7 @@ app.post('/api/style/analyze-base64', async (req, res) => {
 });
 
 
-// Fallback válasz függvény a stíluselemzéshez
+
 function getStyleFallbackResponse() {
   return {
     colorType: 'Ősz - meleg, mély színek',
@@ -558,9 +556,9 @@ function getStyleFallbackResponse() {
   };
 }
 
-// Segédfüggvény a stíluselemzés generálásához
+
 function generateStyleAnalysis() {
-  // Színtípusok
+
   const colorTypes = [
     'Tavasz - meleg, világos színek',
     'Nyár - hűvös, lágy színek',
@@ -568,7 +566,7 @@ function generateStyleAnalysis() {
     'Tél - hűvös, élénk színek'
   ];
   
-  // Testalkat típusok
+
   const bodyTypes = [
     'Homokóra - kiegyensúlyozott váll és csípő, karcsú derék',
     'Körte - keskenyebb váll, szélesebb csípő',
@@ -577,7 +575,7 @@ function generateStyleAnalysis() {
     'Fordított háromszög - szélesebb váll, keskenyebb csípő'
   ];
   
-  // Arcforma típusok
+ 
   const faceShapes = [
     'Ovális - kiegyensúlyozott, harmonikus arcforma',
     'Kerek - lágy vonalak, telt arc',
@@ -587,7 +585,7 @@ function generateStyleAnalysis() {
     'Gyémánt - keskeny homlok és áll, széles arccsont'
   ];
   
-  // Stílus típusok
+ 
   const styleTypes = [
     'Klasszikus - időtlen, elegáns darabok',
     'Természetes - kényelmes, laza viselet',
@@ -598,7 +596,7 @@ function generateStyleAnalysis() {
     'Elegáns - kifinomult, minőségi darabok'
   ];
   
-  // Ajánlott színek generálása a színtípus alapján
+  
   const colorPalettes = {
     'Tavasz': [
       { name: 'Korall', hex: '#ff7f50' },
@@ -630,7 +628,7 @@ function generateStyleAnalysis() {
     ]
   };
   
-  // Kerülendő színek generálása a színtípus alapján
+  
   const avoidColorPalettes = {
     'Tavasz': [
       { name: 'Fekete', hex: '#000000' },
@@ -654,23 +652,23 @@ function generateStyleAnalysis() {
     ]
   };
   
-  // Véletlenszerű kiválasztás a listákból
+ 
   const randomItem = (array) => array[Math.floor(Math.random() * array.length)];
   
-  // Színtípus kiválasztása
+ 
   const colorType = randomItem(colorTypes);
-  const colorTypeName = colorType.split(' - ')[0]; // Csak a színtípus neve (pl. "Tavasz")
+  const colorTypeName = colorType.split(' - ')[0]; 
   
-  // Ajánlott és kerülendő színek kiválasztása a színtípus alapján
+  
   const recommendedColors = colorPalettes[colorTypeName];
   const avoidColors = avoidColorPalettes[colorTypeName];
   
-  // Többi tulajdonság kiválasztása
+
   const bodyType = randomItem(bodyTypes);
   const faceShape = randomItem(faceShapes);
   const recommendedStyle = randomItem(styleTypes);
   
-  // Stílustanácsok generálása
+ 
   const styleAdvice = `
     A képed alapján a ${colorType.toLowerCase()} típusba tartozol. 
     Testalkatod ${bodyType.toLowerCase()}, ezért érdemes olyan ruhákat választanod, 
@@ -700,17 +698,17 @@ function generateStyleAnalysis() {
 }
 
 function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult, imagePropertiesResult) {
-  // Arcforma meghatározása a faceDetectionResult alapján
-  let faceShape = "Ovális - kiegyensúlyozott, harmonikus arcforma"; // alapértelmezett
+  
+  let faceShape = "Ovális - kiegyensúlyozott, harmonikus arcforma"; 
   if (faceDetectionResult && faceDetectionResult.faceAnnotations && faceDetectionResult.faceAnnotations.length > 0) {
     const face = faceDetectionResult.faceAnnotations[0];
     
-    // Arcforma meghatározása a landmark-ok alapján
+   
     if (face.landmarks) {
-      // Arcszélesség és -magasság kiszámítása
+      
       const landmarks = face.landmarks;
       
-      // Keressük meg a szükséges pontokat
+    
       const leftEar = landmarks.find(l => l.type === 'LEFT_EAR_TRAGION');
       const rightEar = landmarks.find(l => l.type === 'RIGHT_EAR_TRAGION');
       const chin = landmarks.find(l => l.type === 'CHIN_GNATHION');
@@ -719,19 +717,19 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
       const rightCheek = landmarks.find(l => l.type === 'RIGHT_CHEEK');
       
       if (leftEar && rightEar && chin && foreHead) {
-        // Arcszélesség (fül-fül távolság)
+       
         const faceWidth = Math.sqrt(
           Math.pow(rightEar.position.x - leftEar.position.x, 2) +
           Math.pow(rightEar.position.y - leftEar.position.y, 2)
         );
         
-        // Arcmagasság (homlok-áll távolság)
+       
         const faceHeight = Math.sqrt(
           Math.pow(chin.position.x - foreHead.position.x, 2) +
           Math.pow(chin.position.y - foreHead.position.y, 2)
         );
         
-        // Arccsont szélesség (ha elérhető)
+        
         let cheekWidth = 0;
         if (leftCheek && rightCheek) {
           cheekWidth = Math.sqrt(
@@ -740,7 +738,7 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
           );
         }
         
-        // Arcforma meghatározása a méretek alapján
+        
         const ratio = faceHeight / faceWidth;
         
         if (ratio > 1.5) {
@@ -750,18 +748,18 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
         } else if (cheekWidth > 0 && cheekWidth / faceWidth > 0.8) {
           faceShape = "Gyémánt - keskeny homlok és áll, széles arccsont";
         } else if (face.joyLikelihood === 'VERY_LIKELY' || face.joyLikelihood === 'LIKELY') {
-          // Ha mosolyog, valószínűbb a kerek arc
+
           faceShape = "Kerek - lágy vonalak, telt arc";
         } else if (face.angerLikelihood === 'VERY_LIKELY' || face.angerLikelihood === 'LIKELY') {
-          // Ha mérges, valószínűbb a szögletes arc
+       
           faceShape = "Szögletes - határozott állkapocs, széles homlok";
         }
       }
     }
   }
   
-  // Testalkat meghatározása a labelResult alapján
-  let bodyType = "Homokóra - kiegyensúlyozott váll és csípő, karcsú derék"; // alapértelmezett
+
+  let bodyType = "Homokóra - kiegyensúlyozott váll és csípő, karcsú derék";
   if (labelResult && labelResult.labelAnnotations) {
     const labels = labelResult.labelAnnotations.map(label => label.description.toLowerCase());
     
@@ -778,13 +776,13 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
     }
   }
   
-  // Színtípus meghatározása a képtulajdonságok alapján
-  let colorType = "Tavasz - meleg, világos színek"; // alapértelmezett
+
+  let colorType = "Tavasz - meleg, világos színek"; 
   if (imagePropertiesResult && imagePropertiesResult.imagePropertiesAnnotation && 
       imagePropertiesResult.imagePropertiesAnnotation.dominantColors) {
     const colors = imagePropertiesResult.imagePropertiesAnnotation.dominantColors.colors;
     
-    // Színek elemzése
+   
     let warmColors = 0;
     let coolColors = 0;
     let brightColors = 0;
@@ -796,17 +794,17 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
       const g = color.green || 0;
       const b = color.blue || 0;
       
-      // Meleg/hideg színek meghatározása
+    
       if (r > b) warmColors += colorInfo.score;
       else coolColors += colorInfo.score;
       
-      // Világos/tompa színek meghatározása
+      
       const brightness = (r + g + b) / 3;
       if (brightness > 128) brightColors += colorInfo.score;
       else mutedColors += colorInfo.score;
     });
     
-    // Színtípus meghatározása a színek alapján
+   
     if (warmColors > coolColors) {
       if (brightColors > mutedColors) {
         colorType = "Tavasz - meleg, világos színek";
@@ -822,7 +820,7 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
     }
   }
   
-  // Ajánlott színek a színtípus alapján
+  
   const colorPalettes = {
     'Tavasz': [
       { name: 'Korall', hex: '#ff7f50' },
@@ -881,8 +879,8 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
   const recommendedColors = colorPalettes[colorTypeName] || colorPalettes['Tavasz'];
   const avoidColors = avoidColorPalettes[colorTypeName] || avoidColorPalettes['Tavasz'];
   
-  // Stílus meghatározása a címkék alapján
-  let recommendedStyle = "Klasszikus - időtlen, elegáns darabok"; // alapértelmezett
+  
+  let recommendedStyle = "Klasszikus - időtlen, elegáns darabok"; 
   if (labelResult && labelResult.labelAnnotations) {
     const labels = labelResult.labelAnnotations.map(label => label.description.toLowerCase());
     
@@ -901,7 +899,7 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
     }
   }
   
-  // Stílustanácsok generálása
+ 
   const styleAdvice = `
     A képed alapján a ${colorType.toLowerCase()} típusba tartozol.
     Testalkatod ${bodyType.toLowerCase()}, ezért érdemes olyan ruhákat választanod,
@@ -931,12 +929,12 @@ function generateStyleAnalysisFromVisionResults(faceDetectionResult, labelResult
 }
 
 
-// API használat lekérdezése a stílus API-hoz
+
 app.get('/api/style/usage', (req, res) => {
   try {
     console.log('Style API usage request received');
     
-    // Ellenőrizzük, hogy az adatbázis kapcsolat él-e
+  
     if (!db || db.state === 'disconnected') {
       console.error('Adatbázis kapcsolat nem elérhető');
       return res.status(500).json({ error: 'Adatbázis kapcsolat nem elérhető' });
@@ -951,7 +949,7 @@ app.get('/api/style/usage', (req, res) => {
       
       console.log('Style API usage data retrieved:', results);
       
-      // Ha nincs még bejegyzés, hozzunk létre egy alapértelmezett választ
+     
       if (!results || results.length === 0) {
         return res.json({
           api_name: 'style_api',
@@ -970,7 +968,7 @@ app.get('/api/style/usage', (req, res) => {
   }
 });
 
-// API használat nullázása a stílus API-hoz
+
 app.post('/api/style/usage/reset', async (req, res) => {
   try {
     await db.query(
@@ -983,7 +981,7 @@ app.post('/api/style/usage/reset', async (req, res) => {
   }
 });
 
-// Stílus API inicializálása az adatbázisban
+
 app.post('/api/style/initialize', async (req, res) => {
   try {
     const query = `
@@ -1009,7 +1007,7 @@ app.post('/api/style/initialize', async (req, res) => {
   }
 });
 
-// Stílus API használati statisztikák
+
 app.get('/api/style/stats', async (req, res) => {
   try {
     const query = `
@@ -1044,7 +1042,7 @@ app.get('/api/style/stats', async (req, res) => {
   }
 });
 
-// Stílus API használati limit beállítása
+
 app.post('/api/style/set-limit', async (req, res) => {
   try {
     const { limit } = req.body;
@@ -1074,11 +1072,10 @@ app.post('/api/style/set-limit', async (req, res) => {
   }
 });
 
-// Stílus API használati előzmények
+
 app.get('/api/style/history', async (req, res) => {
   try {
-    // Itt egy valós implementációban lekérdeznénk az adatbázisból a használati előzményeket
-    // Most csak egy mock választ adunk vissza
+   
     
     const mockHistory = [
       { date: '2023-05-01', count: 5 },
@@ -1095,11 +1092,10 @@ app.get('/api/style/history', async (req, res) => {
   }
 });
 
-// Stílus API használati előrejelzés
+
 app.get('/api/style/forecast', async (req, res) => {
   try {
-    // Itt egy valós implementációban kiszámolnánk az előrejelzést az eddigi használat alapján
-    // Most csak egy mock választ adunk vissza
+ 
     
     const mockForecast = {
       estimated_monthly_usage: 150,
@@ -1115,7 +1111,7 @@ app.get('/api/style/forecast', async (req, res) => {
 });
 
 const visionClient2 = new vision.ImageAnnotatorClient({
-  keyFilename: './vision-api-key1.json' // Az új fiók kulcsfájlja - a fájlnevet módosítsd a tényleges fájlnévre
+  keyFilename: './vision-api-key1.json' 
 });
 app.post('/api/vision/analyze-file', async (req, res) => {
   try {
@@ -1125,27 +1121,25 @@ app.post('/api/vision/analyze-file', async (req, res) => {
       return res.status(400).json({ error: 'Nincs feltöltött kép' });
     }
     
-    // Növeljük az API használati számlálót az új fiókhoz
+    
     await incrementApiUsage('vision_api_2');
     
-    // A fájl elérési útja
     const filePath = path.join(__dirname, req.file.path);
     
     try {
-      // Vision API hívások az új fiókkal
+      
       const [labelResult] = await visionClient2.labelDetection(filePath);
       const [objectResult] = await visionClient2.objectLocalization(filePath);
       const [imagePropertiesResult] = await visionClient2.imageProperties(filePath);
       
-      // Eredmények feldolgozása
+      
       const labels = labelResult.labelAnnotations || [];
       const objects = objectResult.localizedObjectAnnotations || [];
       const colors = imagePropertiesResult.imagePropertiesAnnotation?.dominantColors?.colors || [];
       
-      // A többi kód ugyanaz, mint az eredeti végpontban...
-      // Kategória meghatározás, leírás generálás, stb.
+    
       
-      // Válasz összeállítása
+      
       const response = {
         suggestedCategory,
         suggestedDescription,

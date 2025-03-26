@@ -2,14 +2,14 @@ const request = require('supertest');
 const express = require('express');
 const mysql = require('mysql');
 
-// Mock-oljuk a függőségeket
+
 jest.mock('mysql');
 
-// Létrehozunk egy Express alkalmazást a tesztekhez
+
 const app = express();
 app.use(express.json());
 
-// Felhasználók lekérése végpont
+
 app.get('/users', (req, res) => {
   res.json([
     { f_azonosito: 1, felhasznalonev: 'Teszt Felhasználó 1', email: 'teszt1@example.com' },
@@ -17,12 +17,12 @@ app.get('/users', (req, res) => {
   ]);
 });
 
-// Felhasználó törlése végpont
+
 app.delete('/users/:id', (req, res) => {
   res.json({ message: 'Felhasználó sikeresen törölve' });
 });
 
-// Felhasználó adatainak lekérése végpont
+
 app.get('/user/:id', (req, res) => {
   res.json({
     felhasznalonev: 'Teszt Felhasználó',
@@ -30,14 +30,14 @@ app.get('/user/:id', (req, res) => {
   });
 });
 
-// Felhasználó ellenőrzése végpont
+
 app.get('/check-user/:username', (req, res) => {
   res.json({ exists: true, email: 'teszt@example.com' });
 });
 
 describe('Felhasználók kezelése', () => {
   beforeEach(() => {
-    // Mock adatbázis kapcsolat
+  
     mysql.createConnection.mockReturnValue({
       query: jest.fn((query, params, callback) => {
         if (typeof params === 'function') {

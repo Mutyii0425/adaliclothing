@@ -56,7 +56,6 @@ class OrderController {
             const { userId, orderAmount, orderDate } = req.body
             const stats = await this.orderModel.getOrderStats(userId)
       
-            // Hozzáadjuk az új rendelés adatait
             stats.totalOrders += 1
             stats.totalAmount += orderAmount
             stats.lastOrderDate = orderDate

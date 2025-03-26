@@ -30,16 +30,16 @@ class RegisterPage {
 
   async isRegistrationSuccessful() {
     try {
-      // Várjunk egy kicsit, hogy a regisztráció feldolgozódjon
+     
       await this.driver.sleep(2000);
       
-      // Próbáljunk meg több lehetséges sikeres regisztráció jelzést keresni
+      
       const possibleSuccessSelectors = [
         '.MuiDialog-paper',
         '.success-message',
         '.MuiAlert-message',
         '[role="dialog"]',
-        // Adj hozzá további szelektorokat, ha szükséges
+       
       ];
       
       for (const selector of possibleSuccessSelectors) {
@@ -52,19 +52,19 @@ class RegisterPage {
             return true;
           }
         } catch (e) {
-          // Folytatjuk a következő szelektorral
+          
         }
       }
       
-      // Ellenőrizzük, hogy átirányított-e a kezdőlapra
+      
       try {
         await this.driver.wait(until.urlContains('/kezdolap'), 5000);
         return true;
       } catch (e) {
-        // Nem irányított át a kezdőlapra
+        
       }
       
-      // Ha nem találtunk sikeres regisztrációt jelző elemet, készítsünk képernyőképet
+      
       const { takeScreenshot } = require('../helpers/testHelper');
       await takeScreenshot(this.driver, 'registration-success-not-found');
       

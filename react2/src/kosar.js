@@ -103,17 +103,17 @@ export default function Kosar() {
     setDeleteAlert(false);
   };
 
-    // In the handleCheckout function, add a check for empty cart
+   
 const handleCheckout = () => {
   if (cartItems.length === 0) {
-    // Show an error message if cart is empty
+   
     setQuantityMessage('A kosár üres! Kérjük, adjon hozzá termékeket a folytatáshoz.');
     setQuantityAlert(true);
     setTimeout(() => setQuantityAlert(false), 3000);
-    return; // Prevent navigation
+    return;
   }
   
-  // If cart has items, proceed to shipping page
+ 
   navigate('/shipping', {
     state: {
       cartItems: cartItems,
@@ -174,7 +174,7 @@ const handleCheckout = () => {
   backgroundColor: darkMode ? '#333' : '#f5f5f5',
   backgroundImage: darkMode 
     ? 'radial-gradient(#444 1px, transparent 1px)'
-    : 'radial-gradient(#aaaaaa 1px, transparent 1px)',  // Changed from #e0e0e0 to #aaaaaa for better visibility
+    : 'radial-gradient(#aaaaaa 1px, transparent 1px)', 
   backgroundSize: '20px 20px',
   color: darkMode ? 'white' : 'black',
   minHeight: '100vh',
@@ -533,7 +533,7 @@ const handleCheckout = () => {
         backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.9)' : 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(10px)',
         borderRadius: { xs: '12px', sm: '16px' },
-        border: darkMode ? 'none' : '2px solid black', // Add this line for black border in light mode
+        border: darkMode ? 'none' : '2px solid black',
         boxShadow: darkMode
           ? '0 8px 32px rgba(0, 0, 0, 0.3)'
           : '0 8px 32px rgba(0, 0, 0, 0.1)',
@@ -724,7 +724,7 @@ const handleCheckout = () => {
     borderRadius: '16px',
     position: 'sticky',
     top: '2rem',
-    // Add this line for black border in light mode
+   
     border: darkMode ? 'none' : '2px solid black',
     boxShadow: darkMode
       ? '0 8px 32px rgba(0, 0, 0, 0.3)'

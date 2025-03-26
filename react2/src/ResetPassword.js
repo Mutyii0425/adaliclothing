@@ -58,7 +58,7 @@ export default function ResetPassword() {
     try {
       console.log('Küldés a szervernek:', { token, newPassword: password });
       
-      // Próbáljuk meg elküldeni a kérést a 4000-es portra
+      
       const response = await fetch('http://localhost:5000/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,12 +76,12 @@ export default function ResetPassword() {
         setIsSuccess(true);
         setShowDialog(true);
         
-        // Átirányítás a bejelentkezési oldalra 3 másodperc után
+        
         setTimeout(() => {
           navigate('/sign');
         }, 3000);
       } else {
-        // Hibakezelés a válasz státuszkódja alapján
+      
         if (data.errorType === 'invalid_token') {
           setDialogTitle('Érvénytelen token');
           setDialogMessage('A jelszó-visszaállítási link érvénytelen vagy lejárt. Kérj új linket a bejelentkezési oldalon.');
@@ -104,7 +104,7 @@ export default function ResetPassword() {
     } catch (error) {
       console.error('Fetch hiba:', error);
       
-      // Kapcsolódási hiba esetén próbáljuk meg a 3000-es portot (ha a szerver ott fut)
+ 
       try {
         console.log('Próbálkozás a 3000-es porttal...');
         const response = await fetch('http://localhost:3000/reset-password', {
@@ -133,7 +133,7 @@ export default function ResetPassword() {
       } catch (secondError) {
         console.error('Második fetch hiba:', secondError);
         
-        // Ha mindkét port hibás, akkor használjuk a fallback megoldást
+       
         setDialogTitle('Kapcsolódási hiba');
         setDialogMessage('Nem sikerült kapcsolódni a szerverhez. A jelszóváltoztatás nem került mentésre. Kérjük, próbáld újra később, vagy lépj kapcsolatba az ügyfélszolgálattal.');
         setIsSuccess(false);
@@ -149,12 +149,12 @@ export default function ResetPassword() {
   
   return (
     <Box sx={{ 
-      backgroundColor: '#121212', // Sötét háttérszín
+      backgroundColor: '#121212',
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Fejléc hozzáadása */}
+     
       <AppBar position="static" sx={{ backgroundColor: '#1E1E1E', boxShadow: 3 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ 
@@ -178,8 +178,8 @@ export default function ResetPassword() {
             p: 4,
             borderRadius: 2,
             boxShadow: 3,
-            bgcolor: '#1E1E1E', // Sötét háttérszín a kártyának
-            color: 'white' // Fehér szövegszín
+            bgcolor: '#1E1E1E', 
+            color: 'white' 
           }}
         >
           <Typography component="h1" variant="h5" sx={{ mb: 3, color: 'white' }}>
@@ -197,7 +197,7 @@ export default function ResetPassword() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               InputProps={{
-                style: { color: 'white' }, // Fehér szövegszín az input mezőben
+                style: { color: 'white' },
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={togglePasswordVisibility} edge="end" sx={{ color: 'white' }}>
@@ -207,18 +207,18 @@ export default function ResetPassword() {
                 ),
               }}
               InputLabelProps={{
-                style: { color: 'white' }, // Fehér címke szín
+                style: { color: 'white' }, 
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.3)', // Fehér keret halványan
+                    borderColor: 'rgba(255, 255, 255, 0.3)', 
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)', // Fehér keret hover állapotban
+                    borderColor: 'rgba(255, 255, 255, 0.5)', 
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: 'white', // Fehér keret fókuszált állapotban
+                    borderColor: 'white', 
                   },
                 },
               }}
@@ -234,7 +234,7 @@ export default function ResetPassword() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               InputProps={{
-                style: { color: 'white' }, // Fehér szövegszín az input mezőben
+                style: { color: 'white' }, 
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={toggleConfirmPasswordVisibility} edge="end" sx={{ color: 'white' }}>
@@ -244,18 +244,18 @@ export default function ResetPassword() {
                 ),
               }}
               InputLabelProps={{
-                style: { color: 'white' }, // Fehér címke szín
+                style: { color: 'white' }, 
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.3)', // Fehér keret halványan
+                    borderColor: 'rgba(255, 255, 255, 0.3)', 
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)', // Fehér keret hover állapotban
+                    borderColor: 'rgba(255, 255, 255, 0.5)', 
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: 'white', // Fehér keret fókuszált állapotban
+                    borderColor: 'white', 
                   },
                 },
               }}
@@ -269,9 +269,9 @@ export default function ResetPassword() {
               sx={{ 
                 mt: 3, 
                 mb: 2,
-                bgcolor: '#4CAF50', // Zöld gomb
+                bgcolor: '#4CAF50', 
                 '&:hover': {
-                  bgcolor: '#45a049', // Sötétebb zöld hover állapotban
+                  bgcolor: '#45a049', 
                 },
                 color: 'white'
               }}
@@ -289,7 +289,7 @@ export default function ResetPassword() {
         </Box>
       </Container>
       
-      {/* A dialógus komponens marad a korábbi módosításokkal */}
+      
       <Dialog
         open={showDialog}
         onClose={() => !isSuccess && setShowDialog(false)}
@@ -314,11 +314,11 @@ export default function ResetPassword() {
             borderColor: isSuccess ? '#4CAF50' : '#FF5757',
             position: 'relative',
             overflow: 'hidden',
-            color: 'white' // Fehér szövegszín az egész dialógusban
+            color: 'white' 
           }
         }}
       >
-        {/* A dialógus tartalma marad a korábbi módosításokkal */}
+       
         <Box
           sx={{
             position: 'absolute',
@@ -375,7 +375,7 @@ export default function ResetPassword() {
           variant="body1" 
           sx={{ 
             mb: 3,
-            color: 'white' // Explicit módon állítsuk be a szöveg színét fehérre
+            color: 'white' 
           }}
         >
           {dialogMessage}
@@ -386,7 +386,7 @@ export default function ResetPassword() {
             variant="body2" 
             sx={{ 
               mb: 3, 
-              color: 'white' // Explicit módon állítsuk be a szöveg színét fehérre
+              color: 'white' 
             }}
           >
             Átirányítás a bejelentkezési oldalra 3 másodperc múlva...
