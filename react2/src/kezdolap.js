@@ -33,8 +33,8 @@ import Menu from './menu2';
 import { useInView } from 'react-intersection-observer';
 import { Rating } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import PersonIcon from '@mui/icons-material/Person';
 
-// Define prizes outside both components so it's accessible
 const prizes = [
   { option: 'Nincs nyeremény', style: { backgroundColor: '#34495E', textColor: '#fff' }},
   { option: '10% kedvezmény', style: { backgroundColor: '#2ECC71', textColor: '#fff' }},
@@ -48,7 +48,7 @@ const CouponAlert = ({
   open, 
   onClose, 
   darkMode, 
-  onPrizeWon,  // Győződj meg róla, hogy ez a prop szerepel a paraméterlistában
+  onPrizeWon,  
   setWonPrize,
   setShowWelcomeDialog,
   setShowSuccessAlert,
@@ -84,11 +84,11 @@ const CouponAlert = ({
         setTimeout(() => {
           setIsSpinning(false);
           
-          // Értesítsük a szülő komponenst a nyereményről
+        
           if (typeof onPrizeWon === 'function') {
             onPrizeWon(finalPrize);
           } else {
-            // Ha nincs onPrizeWon, akkor használjuk a régi módszert
+           
             setWonPrize && setWonPrize(finalPrize);
             setShowWelcomeDialog && setShowWelcomeDialog(false);
             setTimeout(() => {
@@ -218,18 +218,18 @@ const Home = () => {
     const element = document.getElementById(elementId);
     if (!element) return;
     
-    // Animáció állapotának beállítása
+    
     setAnimationStates(prev => ({
       ...prev,
       [elementId]: true
     }));
     
-    // Animáció tisztítása és újraindítása
+   
     element.style.animation = 'none';
     void element.offsetWidth; // Force reflow
     element.style.animation = `${animationName} ${duration}ms`;
     
-    // Animáció befejezése után állapot visszaállítása
+   
     setTimeout(() => {
       setAnimationStates(prev => ({
         ...prev,
@@ -238,9 +238,9 @@ const Home = () => {
     }, duration);
   };
 
-  // Animációk újraindítása
+  
   const resetAllAnimations = () => {
-    // Minden animált elem azonosítója
+   
     const animatedElements = ['slideImage', 'slideText', 'slideButton'];
     
     animatedElements.forEach(elementId => {
@@ -251,14 +251,14 @@ const Home = () => {
       }
     });
     
-    // Animációs állapotok visszaállítása
+   
     setAnimationStates({});
     setIsAnimating(false);
   };
 
-  // Időszakos animáció-újraindítás
+ 
   useEffect(() => {
-    // 10 percenként újraindítjuk az animációkat
+    
     const resetInterval = setInterval(() => {
       resetAllAnimations();
     }, 10 * 60 * 1000);
@@ -279,9 +279,9 @@ const Home = () => {
       if (delta >= 1000) {
         const fps = Math.round((frameCount * 1000) / delta);
         
-        // Ha az FPS túl alacsony, egyszerűsítsük az animációkat
+       
         if (fps < 30) {
-          // Egyszerűsített animációk bekapcsolása
+         
           document.body.classList.add('reduced-animations');
         } else {
           document.body.classList.remove('reduced-animations');
@@ -429,11 +429,13 @@ useEffect(() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: userData.email,
-          coupon: coupon
+          coupon: coupon,
+          couponUsed: false 
         })
       });
       if (response.ok) {
         userData.kupon = coupon;
+        userData.kupon_hasznalva = false;
         localStorage.setItem('user', JSON.stringify(userData));
       }
     } catch (error) {
@@ -559,7 +561,7 @@ useEffect(() => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // Csak akkor indítsuk el az időzítőt, ha nem animálunk éppen
+
     if (!isAnimating) {
       const timer = setTimeout(() => {
         setIsAnimating(true);
@@ -569,22 +571,22 @@ useEffect(() => {
         const textElement = document.getElementById('slideText');
   
         if (imageElement && textElement) {
-          // Kimenő animáció
+ 
           imageElement.style.animation = 'slideOutLeft 1.5s ease-in-out';
           textElement.style.animation = 'slideOutRight 1.5s ease-in-out';
           
-          // Várjunk, amíg a kimenő animáció befejeződik
+    
           setTimeout(() => {
-            // A képváltás logikája
+       
             const nextIndex = currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1;
             console.log("Képváltás:", currentImageIndex, "->", nextIndex);
             setCurrentImageIndex(nextIndex);
             
-            // Bejövő animáció
+       
             imageElement.style.animation = 'slideInLeft 1.5s ease-in-out';
             textElement.style.animation = 'slideInRight 1.5s ease-in-out';
             
-            // Várjunk, amíg a bejövő animáció befejeződik
+          
             setTimeout(() => {
               setIsAnimating(false);
               console.log("Animáció befejezve, új kép:", nextIndex);
@@ -703,19 +705,26 @@ useEffect(() => {
                                   <ShoppingCartIcon />
                                 </Badge>
                               </IconButton>
-                                      <Button
-                                      ref={anchorRef}
-                                        onClick={handleToggle}
-                                        sx={{
-                                          color: '#fff',
-                                          zIndex: 1300,
-                                          border: '1px solid #fff',
-                                          borderRadius: '5px',
-                                          padding: '5px 10px',
-                                        }}
-                                      >
-                                        Profil
-                                      </Button>
+                              <IconButton
+                                ref={anchorRef}
+                                onClick={handleToggle}
+                                sx={{
+                                  color: '#fff',
+                                  zIndex: 1300,
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                                  borderRadius: '50%',
+                                  padding: '8px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                    transform: 'scale(1.05)',
+                                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)'
+                                  }
+                                }}
+                              >
+                                <PersonIcon fontSize="medium" />
+                              </IconButton>
                               <Popper
                 open={open}
                 anchorEl={anchorRef.current}
@@ -790,6 +799,34 @@ useEffect(() => {
                           >
                             <Typography variant="body1">Fiókom</Typography>
                           </MenuItem>
+
+                          <MenuItem 
+                          onClick={handleClose}
+                          sx={{
+                            py: 1.5,
+                            px: 2,
+                            color: darkMode ? '#fff' : '#333',
+                            '&:hover': {
+                              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                            },
+                            gap: 2,
+                          }}
+                        >
+                          <Typography variant="body1">
+                            {(() => {
+                              const user = JSON.parse(localStorage.getItem('user') || '{}');
+                              if (user.kupon) {
+                                if (user.kupon_hasznalva) {
+                                  return `Kupon: ${user.kupon} (Felhasználva)`;
+                                } else {
+                                  return `Kupon: ${user.kupon} (Aktív)`;
+                                }
+                              } else {
+                                return 'Nincs kuponod';
+                              }
+                            })()}
+                          </Typography>
+                        </MenuItem>
 
                           <MenuItem 
                             onClick={handleLogout}

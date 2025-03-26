@@ -1,0 +1,14 @@
+{
+    "type": "service_account",
+    "project_id": "adali-clothing-web",
+    "private_key_id": "1c721fd125a99aa95980ff31b402aa9ca5dc1ba5",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEDZsPfEo6Da0Y\n9bZ4gE/NvqWGHtEDu4brwxrsVG2sImTRGFL7J0U03QeOOO/8P4mGEKFl1fj6Rgxs\nSynokGPmvEQprg24zlwxsOZAmlmz1gq9jie2Gz8FmA0swVrK0tgzuPFxI25xl48X\nzz8GxNmylB1Mb0JsPMECh9/3AZZbbhE2yUpNz8zljU+t533SFOoLVzvbbKnGd7cF\nQQ3V9KnjmCfE6jr1yb1jpS7XLDWsWfh+OaNX3nATDKoibzZbQvnqEsmOYOoJZOn4\n1mFwdhIaprSyYbCEAexbRlnR4kvFwm6mG/SD0NNUTz8age5m2OShNklxy38WwmDg\nKQN/CcyRAgMBAAECggEACmJnW0APyTCIYbMhnrM6ruTdTPvowaorGsWpQVl1O+3w\nMb5YZlzRksvOkrUfuohlxRXwS5XkZ8LCNZH7YrnzrbD9Cglh6Q8WpWvnnUZDsDWr\nGNhc0H2z1ky0DXHiKI43lRFDqiTInMAMrHPd9HKErqufW+kkfznOVh9K8NEa5QWo\n/VpZS+Yepg9y6YBHRSU1qzNAsk+Rb5M8H2Fmlz35Hz7n+wzwWLOhGtMuF0RQJvhH\nZ3JbOJXee6vEyihC+XSlsenxgfDV0f1KIx8K0YHNoXGo5V0TIJWHgBnJi9+pz30L\noQTP2LPO041yHWNKW667+5C6xFSfmmslmYjQahsS4QKBgQD9vKs4bOW2BDRaJslB\n7BhruUptEH+mXv+sqr8RIGVFRUg/FVw5XrsIwTewh1d3LTR5mbowQegYsBt95F5D\n/wfxcQF/vfjGFrM4jwwutGzvuyq1e6RYfHOBPdqxGA/aeZWyeHH3br5wG2HjjLz1\nnn/HBPJKrN5plwrY6jzhvh/18QKBgQDFzTu/KXJME1+NYu5VYjqe7sTVWfw/OcnN\na6gq1jwVGRlvN8f6rNQZl+SiQPWnvROFFHXjDDiSE8KnrYk9720G+/fRrKaj9Won\nRJ3+56qsF3nxnWz7pjd8tTjWGdIrvh2iyBFPL2EHG8IrvH7OXuRPjoYTcRQxgYYS\nrNmJl1IgoQKBgQCqHukdd8W7962yE/cz/7uP3jeMUFeFkIQTnJdmQDYl74G06flf\nbagxAnr4HIYEHYblULCI0mduxgRor8iUBlWpB39dyl0VUvrunNoqJkYzpWXJMBDM\nUwSOTo5l1iAq9wHrGt4ua027lGBZVG8Mryw0n5hjgOvOF7rqHIKdR//dwQKBgQCk\n3UrPKlx5zCv4TF0aDaWOkrS8nyQADsqEzRZ9ndK2QxVP/c5QwXyHWHLYSgx2osGC\nSmt3stfz6UR1Pc8GMGlPSPRlbuH2BrdTw31s2OsIRQj+uZf8p63X47Rbv2nNy8gn\nxVmoBnV410of6hxHJhBlvwVBbx7FpI97QVaPt/BcAQKBgAmKXxHHFtzf9mAZ4Hm7\nxYRBcWOF99jddQ5+f/Q37z+WTAGzs76svA7rzPkynVAqJLwuMVZdj2+KxsdusmIZ\nxk41gZjEZMgeQBpa1BBZa3gU4RljsbaV6smWvnz7iLSrAV7v+ZTSY2WEsbO+upBx\ng0Oe9eOBxgqiK4I7h3j8RRfz\n-----END PRIVATE KEY-----\n",
+    "client_email": "csalimate@adali-clothing-web.iam.gserviceaccount.com",
+    "client_id": "108829283012054971566",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/csalimate%40adali-clothing-web.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
+  

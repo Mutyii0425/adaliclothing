@@ -25,6 +25,8 @@ import SecurityIcon from '@mui/icons-material/Security';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import Menu from './menu2';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+
 
 
 export default function Fiokom() {
@@ -35,6 +37,11 @@ export default function Fiokom() {
   const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
   const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 0);
   
+  const [couponInfo, setCouponInfo] = useState({
+    hasCoupon: false,
+    couponCode: '',
+    isUsed: false
+  });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -43,6 +50,11 @@ export default function Fiokom() {
       setUserData({
         email: user.email,
         username: user.username
+      });
+      setCouponInfo({
+        hasCoupon: !!user.kupon,
+        couponCode: user.kupon || '',
+        isUsed: !!user.kupon_hasznalva
       });
     }
   }, []);
@@ -54,22 +66,22 @@ export default function Fiokom() {
     lastOrderDate: null
   });
   
- useEffect(() => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (user && user.f_azonosito) {
-    fetch(`http://localhost:5000/api/order-stats/${user.f_azonosito}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log('Fetched order stats:', data); 
-        setOrderStats({
-          totalOrders: data.totalOrders || 0,
-          totalAmount: data.totalAmount || 0,
-          lastOrderDate: data.lastOrderDate
-        });
-      })
-      .catch(err => console.log('Hiba:', err));
-  }
-}, []);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.f_azonosito) {
+      fetch(`http://localhost:5000/api/order-stats/${user.f_azonosito}`)
+        .then(res => res.json())
+        .then(data => {
+          console.log('Fetched order stats:', data); 
+          setOrderStats({
+            totalOrders: data.totalOrders || 0,
+            totalAmount: data.totalAmount || 0,
+            lastOrderDate: data.lastOrderDate
+          });
+        })
+        .catch(err => console.log('Hiba:', err));
+    }
+  }, [userData]); 
   
 
   const toggleSideMenu = () => {
@@ -206,45 +218,205 @@ export default function Fiokom() {
               />
             </FormGroup>
 
-      <Container maxWidth="lg" sx={{ 
-        mt: 8,
-        backgroundColor: darkMode ? '#333' : '#f0f0f0',
-        borderRadius: '16px',
-        padding: '24px',
-        position: 'relative',
-        zIndex: 1,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-      }}>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ 
-              backgroundColor: darkMode ? '#1c1c1c' : 'white',
-              color: darkMode ? 'white' : 'black',
-              borderRadius: '16px',
-              height: '100%'
-            }}>
-              <CardContent sx={{ textAlign: 'center', py: 4 }}>
-                <Avatar 
-                  sx={{ 
-                    width: 120, 
-                    height: 120, 
-                    margin: '0 auto 20px',
-                    backgroundColor: '#1976d2',
-                    fontSize: '3rem'
-                  }}
-                >
-                  {userData?.username?.charAt(0)?.toUpperCase() || 'A'}
-                </Avatar>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                  {userData?.username || 'Felhasználó'}
-                </Typography>
+            <Container maxWidth="lg" sx={{
+                mt: 8,
+                backgroundColor: darkMode ? '#333' : '#f0f0f0',
+                borderRadius: '16px',
+                padding: '24px',
+                position: 'relative',
+                zIndex: 1,
+                boxShadow: darkMode 
+                  ? '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1)' 
+                  : '0 8px 32px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)',
+                overflow: 'hidden',
                 
-                <Typography variant="body1" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-                  {userData?.email || 'Email cím nincs megadva'}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: 'linear-gradient(90deg, #1976d2, #64b5f6)',
+                  zIndex: 2
+                },
+                
+
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  opacity: 0.03,
+                  backgroundImage: darkMode
+                    ? 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 20L20 0L40 20L20 40z\'/%3E%3C/g%3E%3C/svg%3E")'
+                    : 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'0.1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 20L20 0L40 20L20 40z\'/%3E%3C/g%3E%3C/svg%3E")',
+                  zIndex: -1
+                },
+                
+
+                animation: 'fadeIn 0.5s ease-out',
+                '@keyframes fadeIn': {
+                  from: { opacity: 0, transform: 'translateY(10px)' },
+                  to: { opacity: 1, transform: 'translateY(0)' }
+                },
+
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: darkMode 
+                    ? '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15)' 
+                    : '0 12px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08)'
+                }
+              }}>
+
+                    <Grid container spacing={4}>
+                    <Grid item xs={12} md={4}>
+              <Card sx={{ 
+                backgroundColor: darkMode ? '#1c1c1c' : 'white',
+                color: darkMode ? 'white' : 'black',
+                borderRadius: '16px',
+                height: '100%',
+                overflow: 'hidden',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 12px 28px rgba(0,0,0,0.2)'
+                }
+              }}>
+       
+                <Box sx={{ 
+                  position: 'relative', 
+                  height: '120px', 
+                  background: 'linear-gradient(45deg, #1976d2, #64b5f6)',
+                  overflow: 'hidden'
+                }}>
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    opacity: 0.2,
+                    backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")'
+                  }} />
+                </Box>
+    
+                <CardContent sx={{ 
+                  textAlign: 'center', 
+                  py: 4, 
+                  position: 'relative',
+                  mt: -8
+                }}>
+               
+                  <Avatar 
+                    sx={{ 
+                      width: 120, 
+                      height: 120, 
+                      margin: '0 auto 20px',
+                      backgroundColor: '#1976d2',
+                      fontSize: '3rem',
+                      border: '5px solid',
+                      borderColor: darkMode ? '#1c1c1c' : 'white',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    {userData?.username?.charAt(0)?.toUpperCase() || 'A'}
+                  </Avatar>
+                  
+
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    mb: 1
+                  }}>
+                    {userData?.username || 'Felhasználó'}
+                  </Typography>
+                  
+
+                  <Typography variant="body1" sx={{ 
+                    color: darkMode ? '#aaa' : '#666',
+                    mb: 3
+                  }}>
+                    {userData?.email || 'Email cím nincs megadva'}
+                  </Typography>
+                  
+                  <Divider sx={{ my: 3 }} />
+                  
+              
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666', mb: 1 }}>
+                      Fiók státusz
+                    </Typography>
+                    <Box sx={{
+                      display: 'inline-block',
+                      backgroundColor: darkMode ? 'rgba(25, 118, 210, 0.2)' : 'rgba(25, 118, 210, 0.1)',
+                      color: darkMode ? '#90caf9' : '#1976d2',
+                      borderRadius: '20px',
+                      padding: '6px 16px',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem',
+                      border: '1px solid',
+                      borderColor: darkMode ? 'rgba(25, 118, 210, 0.5)' : 'rgba(25, 118, 210, 0.3)',
+                    }}>
+                      <Typography variant="body2">
+                        {orderStats.totalOrders > 0 ? 'Aktív vásárló' : 'Új felhasználó'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+              
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666', mb: 1 }}>
+                      Vásárlói szint
+                    </Typography>
+                    <Box sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: 1
+                    }}>
+                      {(() => {
+                    
+                        let level, color;
+                        if (orderStats.totalOrders >= 10) {
+                          level = 'Arany';
+                          color = '#FFD700';
+                        } else if (orderStats.totalOrders >= 5) {
+                          level = 'Ezüst';
+                          color = '#C0C0C0';
+                        } else if (orderStats.totalOrders >= 1) {
+                          level = 'Bronz';
+                          color = '#CD7F32';
+                        } else {
+                          level = 'Kezdő';
+                          color = '#1976d2';
+                        }
+                        
+                        return (
+                          <>
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: '50%',
+                                backgroundColor: color
+                              }}
+                            />
+                            <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                              {level}
+                            </Typography>
+                          </>
+                        );
+                      })()}
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
 
           <Grid item xs={12} md={8}>
             <Stack spacing={3}>
@@ -262,7 +434,7 @@ export default function Fiokom() {
                 }}>
                   <PersonIcon /> Személyes Információk
                 </Typography>
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ mb: 3 }} />
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
@@ -282,6 +454,84 @@ export default function Fiokom() {
                   </Grid>
                 </Grid>
               </Paper>
+              <Paper sx={{
+  p: 3,
+  backgroundColor: darkMode ? '#1c1c1c' : 'white',
+  color: darkMode ? 'white' : 'black',
+  borderRadius: '16px',
+  mt: 3
+}}>
+  <Typography variant="h6" gutterBottom sx={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    color: '#1976d2'
+  }}>
+    <LocalOfferIcon /> Kupon Információk
+  </Typography>
+  <Divider sx={{ my: 2 }} />
+  
+  {couponInfo.hasCoupon ? (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+          Kupon kód:
+        </Typography>
+        <Typography variant="body1">
+          {couponInfo.couponCode}
+        </Typography>
+      </Box>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+          Státusz:
+        </Typography>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            color: couponInfo.isUsed 
+              ? (darkMode ? '#ff6b6b' : '#d32f2f') 
+              : (darkMode ? '#4caf50' : '#2e7d32'),
+            fontWeight: 'medium'
+          }}
+        >
+          {couponInfo.isUsed ? 'Felhasználva' : 'Aktív'}
+        </Typography>
+      </Box>
+      
+      {couponInfo.isUsed && (
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            mt: 2, 
+            color: darkMode ? '#aaa' : '#666',
+            fontStyle: 'italic'
+          }}
+        >
+          Ez a kupon már fel lett használva egy korábbi rendelés során.
+        </Typography>
+      )}
+      
+      {!couponInfo.isUsed && (
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            mt: 2, 
+            color: darkMode ? '#aaa' : '#666',
+            fontStyle: 'italic'
+          }}
+        >
+          Ezt a kupont felhasználhatod a következő rendelésed során.
+        </Typography>
+      )}
+    </Box>
+  ) : (
+    <Typography variant="body1" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+      Jelenleg nincs aktív kuponod. Regisztráció után szerezhetsz kedvezménykupont.
+    </Typography>
+  )}
+</Paper>
+
 
               <Paper sx={{
   p: 3,
@@ -298,6 +548,11 @@ export default function Fiokom() {
     <SecurityIcon /> Fiók Statisztika
   </Typography>
   <Divider sx={{ my: 2 }} />
+  {orderStats.totalOrders === 0 ? (
+    <Typography variant="body1" sx={{ textAlign: 'center', my: 3 }}>
+      Még nincs rendelésed. Nézz körül a termékek között!
+    </Typography>
+  ) : (
   <Grid container spacing={3}>
   <Grid item xs={6} md={4}>
   <Box sx={{ textAlign: 'center' }}>
@@ -327,8 +582,8 @@ export default function Fiokom() {
     <Typography variant="body2">Utolsó rendelés dátuma</Typography>
   </Box>
 </Grid>
-
 </Grid>
+)}
 </Paper>
             </Stack>
           </Grid>

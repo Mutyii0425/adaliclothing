@@ -84,8 +84,8 @@ const validateForm = () => {
 
 const discountAmount = Math.round((totalPrice * discountPercentage) / 100);
 const finalPrice = totalPrice - discountAmount + 1590;
-const handleSubmitOrder = async () => {
 
+const handleSubmitOrder = async () => {
   if (!validateForm()) {
     return;
   }
@@ -108,6 +108,19 @@ const handleSubmitOrder = async () => {
 
     const vevoResult = await vevoResponse.json();
 
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData && discountPercentage > 0) {
+      await fetch('http://localhost:5000/mark-coupon-used', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userData.email
+        })
+      });
+      
+      userData.kupon_hasznalva = true;
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
 
     for (const item of cartItems) {
       await fetch('http://localhost:5000/orders/create', {
@@ -244,16 +257,26 @@ if (user && user.f_azonosito) {
     }
   });     
   
+  const [couponStatus, setCouponStatus] = useState({
+    available: false,
+    used: false
+  });
+
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
       const user = JSON.parse(userData);
       if (user.kupon) {
-        
-        const matches = user.kupon.match(/\d+/);
-        if (matches && matches.length > 0) {
-          const percentage = parseInt(matches[0]);
-          setDiscountPercentage(percentage);
+        if (user.kupon_hasznalva) {
+          setCouponStatus({ available: false, used: true });
+          setDiscountPercentage(0); 
+        } else {
+          const matches = user.kupon.match(/\d+/);
+          if (matches && matches.length > 0) {
+            const percentage = parseInt(matches[0]);
+            setDiscountPercentage(percentage);
+            setCouponStatus({ available: true, used: false });
+          }
         }
       }
     }
@@ -434,28 +457,58 @@ if (user && user.f_azonosito) {
                     <Typography sx={{ color: '#fff' }}>Szállítási költség:</Typography>
                     <Typography sx={{ color: '#fff' }}>1590 Ft</Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-  <Typography sx={{ color: '#fff' }}>Kedvezmény ({discountPercentage}%):</Typography>
-  <Typography sx={{ color: '#fff' }}>-{discountAmount.toLocaleString()} Ft</Typography>
-</Box>
-
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      mt: 3,
-                      backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                      padding: 2,
-                      borderRadius: 2
-                    }}
-                  >
-                    <Typography sx={{ color: '#fff' }} variant="h6">Végösszeg:</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#fff' }}>
-  {(totalPrice - discountAmount + 1590).toLocaleString()} Ft
-</Typography>
-
+                  {couponStatus.used && (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    mb: 2,
+                    backgroundColor: darkMode ? 'rgba(255,100,100,0.1)' : 'rgba(255,100,100,0.05)',
+                    padding: 2,
+                    borderRadius: 2
+                  }}>
+                    <Typography sx={{ color: darkMode ? '#ff6b6b' : '#d32f2f' }}>
+                      Kupon:
+                    </Typography>
+                    <Typography sx={{ color: darkMode ? '#ff6b6b' : '#d32f2f' }}>
+                      Már felhasználva
+                    </Typography>
                   </Box>
+                )}
+                
+                {couponStatus.available && (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    mb: 2,
+                    backgroundColor: darkMode ? 'rgba(100,255,100,0.1)' : 'rgba(100,255,100,0.05)',
+                    padding: 2,
+                    borderRadius: 2
+                  }}>
+                    <Typography sx={{ color: darkMode ? '#4caf50' : '#2e7d32' }}>
+                      Kedvezmény ({discountPercentage}%):
+                    </Typography>
+                    <Typography sx={{ color: darkMode ? '#4caf50' : '#2e7d32' }}>
+                      -{discountAmount.toLocaleString()} Ft
+                    </Typography>
+                  </Box>
+                )}
+
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    mt: 3,
+                    backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                    padding: 2,
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography sx={{ color: '#fff' }} variant="h6">Végösszeg:</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#fff' }}>
+                    {(totalPrice - discountAmount + 1590).toLocaleString()} Ft
+                  </Typography>
                 </Box>
+              </Box>
 
                 <Box sx={{ 
     display: 'flex', 

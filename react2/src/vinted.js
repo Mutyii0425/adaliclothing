@@ -27,6 +27,7 @@ import Menu from './menu2';
 import { useNavigate } from 'react-router-dom';
 import Footer from './footer';
 import { CircularProgress } from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
 
 
 export default function Vinted() {
@@ -240,19 +241,26 @@ export default function Vinted() {
                   <ShoppingCartIcon />
                 </Badge>
               </IconButton>
-              <Button
+              <IconButton
                                 ref={anchorRef}
                                 onClick={handleToggle}
                                 sx={{
                                   color: '#fff',
                                   zIndex: 1300,
-                                  border: '1px solid #fff',
-                                  borderRadius: '5px',
-                                  padding: '5px 10px',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                                  borderRadius: '50%',
+                                  padding: '8px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                    transform: 'scale(1.05)',
+                                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)'
+                                  }
                                 }}
                               >
-                                Profil
-                              </Button>
+                                <PersonIcon fontSize="medium" />
+                              </IconButton>
                               <Popper
                 open={open}
                 anchorEl={anchorRef.current}
@@ -309,7 +317,7 @@ export default function Vinted() {
                               {userName} profilja
                             </Typography>
                           </MenuItem>
-              
+
                           <MenuItem 
                             onClick={() => {
                               handleClose();
@@ -327,6 +335,35 @@ export default function Vinted() {
                           >
                             <Typography variant="body1">Fiókom</Typography>
                           </MenuItem>
+
+                          <MenuItem 
+                          onClick={handleClose}
+                          sx={{
+                            py: 1.5,
+                            px: 2,
+                            color: darkMode ? '#fff' : '#333',
+                            '&:hover': {
+                              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                            },
+                            gap: 2,
+                          }}
+                        >
+                          <Typography variant="body1">
+                            {(() => {
+                              const user = JSON.parse(localStorage.getItem('user') || '{}');
+                              if (user.kupon) {
+                                if (user.kupon_hasznalva) {
+                                  return `Kupon: ${user.kupon} (Felhasználva)`;
+                                } else {
+                                  return `Kupon: ${user.kupon} (Aktív)`;
+                                }
+                              } else {
+                                return 'Nincs kuponod';
+                              }
+                            })()}
+                          </Typography>
+                        </MenuItem>
+
               
                           <MenuItem 
                             onClick={handleLogout}

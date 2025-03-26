@@ -29,17 +29,40 @@ class UserModel {
     return rows.length > 0 ? rows[0] : null;
   }
 
-  async create(userData) {
-    const { name, email, password } = userData;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    await this.db.execute(
-      'INSERT INTO user (felhasznalonev, email, jelszo) VALUES (?, ?, ?)', 
-      [name, email, hashedPassword]
-    );
-    
-    return { username: name, email };
-  }
+  
+async markCouponAsUsed(email) {
+  await this.db.execute(
+    'UPDATE user SET kupon_hasznalva = 1 WHERE email = ?',
+    [email]
+  );
+}
+
+
+async findByEmail(email) {
+  const [rows] = await this.db.execute('SELECT * FROM user WHERE email = ?', [email]);
+  return rows.length > 0 ? rows[0] : null;
+}
+
+
+async create(userData) {
+  const { name, email, password } = userData;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  
+  const [result] = await this.db.execute(
+    'INSERT INTO user (felhasznalonev, email, jelszo) VALUES (?, ?, ?)', 
+    [name, email, hashedPassword]
+  );
+  
+  const userId = result.insertId;
+  
+  return { 
+    username: name, 
+    email, 
+    f_azonosito: userId 
+  };
+}
+
+
 
   async updatePassword(userId, newPassword) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);

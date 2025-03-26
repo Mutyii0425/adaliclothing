@@ -95,10 +95,10 @@ class OrderController {
               <h4>Rendelt termékek:</h4>
               <table style="width:100%; border-collapse: collapse;">
                 <tr>
-                  <th>Termék</th>
-                  <th>Mennyiség</th>
-                  <th>Egységár</th>
-                  <th>Részösszeg</th>
+                  <th style="text-align: left; padding: 8px;">Termék</th>
+                  <th style="text-align: left; padding: 8px;">Mennyiség</th>
+                  <th style="text-align: left; padding: 8px;">Egységár</th>
+                  <th style="text-align: left; padding: 8px;">Részösszeg</th>
                 </tr>
                 ${orderItemsList}
               </table>

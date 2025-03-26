@@ -232,6 +232,22 @@ class AuthController {
           }
         }
 
+        async markCouponAsUsed(req, res) {
+          const { email } = req.body;
+          
+          try {
+            await this.userModel.markCouponAsUsed(email);
+            
+            res.json({ 
+              success: true,
+              message: 'Kupon sikeresen felhasználva'
+            });
+          } catch (error) {
+            console.error('Coupon usage marking error:', error);
+            res.status(500).json({ error: 'Kupon használat jelzési hiba' });
+          }
+        }
+
         async updateCoupon(req, res) {
           const { email, coupon } = req.body
     

@@ -28,6 +28,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Footer from './footer';
 import Menu from './menu2';
+import PersonIcon from '@mui/icons-material/Person';
 
 const imageMap = {};
 const images = require.context('../../adaliclothing-mvc/backend/kep', false, /\.(png|jpg|jpeg)$/);
@@ -254,93 +255,129 @@ export default function TermekReszletek() {
                             <ShoppingCartIcon />
                           </Badge>
                         </IconButton>
-                      <Button
-                                        ref={anchorRef}
-                                        onClick={handleToggle}
-                                        sx={{
-                                          color: '#fff',
-                                          zIndex: 1300,
-                                          border: '1px solid #fff',
-                                          borderRadius: '5px',
-                                          padding: '5px 10px',
-                                        }}
-                                      >
-                                        Profil
-                                      </Button>
-                                      <Popper
-                        open={open}
-                        anchorEl={anchorRef.current}
-                        placement="bottom-start"
-                        transition
-                        disablePortal
-                        sx={{ 
-                          zIndex: 1300,
-                          mt: 1, 
-                          '& .MuiPaper-root': {
-                            overflow: 'hidden',
-                            borderRadius: '12px',
-                            boxShadow: darkMode 
-                              ? '0 8px 32px rgba(0, 0, 0, 0.4)'
-                              : '0 8px 32px rgba(0, 0, 0, 0.1)',
-                            border: darkMode 
-                              ? '1px solid rgba(255, 255, 255, 0.1)'
-                              : '1px solid rgba(0, 0, 0, 0.05)',
-                          }
-                        }}
-                      >
-                        {({ TransitionProps, placement }) => (
-                          <Grow
-                            {...TransitionProps}
-                            style={{
-                              transformOrigin: placement === 'bottom-start' ? 'left top' : 'left bottom',
-                            }}
-                          >
-                            <Paper
-                              sx={{
-                                backgroundColor: darkMode ? '#2d2d2d' : '#ffffff',
-                                minWidth: '200px',
-                              }}
-                            >
-                              <ClickAwayListener onClickAway={handleClose}>
-                                <MenuList 
-                                  autoFocusItem={open} 
-                                  onKeyDown={handleListKeyDown}
-                                  sx={{ py: 1 }}
-                                >
-                                  <MenuItem 
-                                    onClick={handleClose}
-                                    sx={{
-                                      py: 1.5,
-                                      px: 2,
-                                      color: darkMode ? '#fff' : '#333',
-                                      '&:hover': {
-                                        backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
-                                      },
-                                      gap: 2,
-                                    }}
-                                  >
-                                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                      {userName} profilja
-                                    </Typography>
-                                  </MenuItem>
+                        <IconButton
+                                                      ref={anchorRef}
+                                                      onClick={handleToggle}
+                                                      sx={{
+                                                        color: '#fff',
+                                                        zIndex: 1300,
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                                        borderRadius: '50%',
+                                                        padding: '8px',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                          transform: 'scale(1.05)',
+                                                          boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)'
+                                                        }
+                                                      }}
+                                                    >
+                                                      <PersonIcon fontSize="medium" />
+                                                    </IconButton>
+                                                    <Popper
+                                      open={open}
+                                      anchorEl={anchorRef.current}
+                                      placement="bottom-start"
+                                      transition
+                                      disablePortal
+                                      sx={{ 
+                                        zIndex: 1300,
+                                        mt: 1, 
+                                        '& .MuiPaper-root': {
+                                          overflow: 'hidden',
+                                          borderRadius: '12px',
+                                          boxShadow: darkMode 
+                                            ? '0 8px 32px rgba(0, 0, 0, 0.4)'
+                                            : '0 8px 32px rgba(0, 0, 0, 0.1)',
+                                          border: darkMode 
+                                            ? '1px solid rgba(255, 255, 255, 0.1)'
+                                            : '1px solid rgba(0, 0, 0, 0.05)',
+                                        }
+                                      }}
+                                    >
+                                      {({ TransitionProps, placement }) => (
+                                        <Grow
+                                          {...TransitionProps}
+                                          style={{
+                                            transformOrigin: placement === 'bottom-start' ? 'left top' : 'left bottom',
+                                          }}
+                                        >
+                                          <Paper
+                                            sx={{
+                                              backgroundColor: darkMode ? '#2d2d2d' : '#ffffff',
+                                              minWidth: '200px',
+                                            }}
+                                          >
+                                            <ClickAwayListener onClickAway={handleClose}>
+                                              <MenuList 
+                                                autoFocusItem={open} 
+                                                onKeyDown={handleListKeyDown}
+                                                sx={{ py: 1 }}
+                                              >
+                                                <MenuItem 
+                                                  onClick={handleClose}
+                                                  sx={{
+                                                    py: 1.5,
+                                                    px: 2,
+                                                    color: darkMode ? '#fff' : '#333',
+                                                    '&:hover': {
+                                                      backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                                    },
+                                                    gap: 2,
+                                                  }}
+                                                >
+                                                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                                    {userName} profilja
+                                                  </Typography>
+                                                </MenuItem>
                       
-                                  <MenuItem 
-                                    onClick={() => {
-                                      handleClose();
-                                      navigate('/fiokom');
-                                    }}
-                                    sx={{
-                                      py: 1.5,
-                                      px: 2,
-                                      color: darkMode ? '#fff' : '#333',
-                                      '&:hover': {
-                                        backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
-                                      },
-                                      gap: 2,
-                                    }}
-                                  >
-                                    <Typography variant="body1">Fiókom</Typography>
-                                  </MenuItem>
+                                                <MenuItem 
+                                                  onClick={() => {
+                                                    handleClose();
+                                                    navigate('/fiokom');
+                                                  }}
+                                                  sx={{
+                                                    py: 1.5,
+                                                    px: 2,
+                                                    color: darkMode ? '#fff' : '#333',
+                                                    '&:hover': {
+                                                      backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                                    },
+                                                    gap: 2,
+                                                  }}
+                                                >
+                                                  <Typography variant="body1">Fiókom</Typography>
+                                                </MenuItem>
+                      
+                                                <MenuItem 
+                                                onClick={handleClose}
+                                                sx={{
+                                                  py: 1.5,
+                                                  px: 2,
+                                                  color: darkMode ? '#fff' : '#333',
+                                                  '&:hover': {
+                                                    backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                                  },
+                                                  gap: 2,
+                                                }}
+                                              >
+                                                <Typography variant="body1">
+                                                  {(() => {
+                                                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                                    if (user.kupon) {
+                                                      if (user.kupon_hasznalva) {
+                                                        return `Kupon: ${user.kupon} (Felhasználva)`;
+                                                      } else {
+                                                        return `Kupon: ${user.kupon} (Aktív)`;
+                                                      }
+                                                    } else {
+                                                      return 'Nincs kuponod';
+                                                    }
+                                                  })()}
+                                                </Typography>
+                                              </MenuItem>
+                      
                       
                                   <MenuItem 
                                     onClick={handleLogout}
