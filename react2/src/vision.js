@@ -1268,43 +1268,43 @@ const PersonalStyleAdvisor = () => {
                          </DialogTitle>
                          
                          <DialogContent sx={{ py: 3 }}>
-                        <Typography variant="body1" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body1" paragraph sx={{ color: darkMode ? '#ffffff' : '#666' }}>
                           Üdvözöljük a Személyes Stílustanácsadó szolgáltatásban! Ez a funkció segít meghatározni a személyes stílusodat és színtípusodat.
                         </Typography>
                         
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1, color: '#ffffff' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1, color: darkMode ? '#ffffff' : '#666' }}>
                           Hogyan működik?
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{ color: darkMode ? '#ffffff' : '#666' }}>
                           1. Tölts fel egy képet magadról vagy készíts egy fotót a kamerával
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{ color: darkMode ? '#ffffff' : '#666' }}>
                           2. Kattints a "Stílus elemzése" gombra
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{ color: darkMode ? '#ffffff' : '#666' }}>
                           3. Az AI elemzi a képet és meghatározza a színtípusodat, testakatodat, arcformádat és javasolt stílusodat
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{ color: darkMode ? '#ffffff' : '#666' }}>
                           4. Az eredmények alapján személyre szabott öltözködési tanácsokat kapsz
                         </Typography>
                         
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1, color: '#ffffff' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1, color: darkMode ? '#ffffff' : '#666' }}>
                           Tippek a legjobb eredményekért:
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{ color: darkMode ? '#ffffff' : '#666' }}>
                           • Használj természetes fényt a képek készítésekor
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{  color: darkMode ? '#ffffff' : '#666' }}>
                           • A kép lehetőleg az egész alakodat vagy legalább az arcodat és vállaidat mutassa
                         </Typography>
                         
-                        <Typography variant="body2" paragraph sx={{ color: '#ffffff' }}>
+                        <Typography variant="body2" paragraph sx={{  color: darkMode ? '#ffffff' : '#666' }}>
                           • Kerüld az erős szűrőket és a túlzott képszerkesztést
                         </Typography>
                         
