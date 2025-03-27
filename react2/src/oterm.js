@@ -28,6 +28,9 @@ import Menu from './menu2';
 import { CircularProgress } from '@mui/material';
 import Footer from './footer';
 import PersonIcon from '@mui/icons-material/Person';
+import ShareProduct from './ShareProduct';
+
+
 
   const Oterm = () => {
     const [products, setProducts] = useState([]);
@@ -314,32 +317,34 @@ import PersonIcon from '@mui/icons-material/Person';
                                       </MenuItem>
             
                                       <MenuItem 
-                                      onClick={handleClose}
-                                      sx={{
-                                        py: 1.5,
-                                        px: 2,
-                                        color: darkMode ? '#fff' : '#333',
-                                        '&:hover': {
-                                          backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
-                                        },
-                                        gap: 2,
-                                      }}
-                                    >
-                                      <Typography variant="body1">
-                                        {(() => {
-                                          const user = JSON.parse(localStorage.getItem('user') || '{}');
-                                          if (user.kupon) {
-                                            if (user.kupon_hasznalva) {
-                                              return `Kupon: ${user.kupon} (Felhasználva)`;
-                                            } else {
-                                              return `Kupon: ${user.kupon} (Aktív)`;
-                                            }
-                                          } else {
-                                            return 'Nincs kuponod';
-                                          }
-                                        })()}
-                                      </Typography>
-                                    </MenuItem>
+                                                                 onClick={handleClose}
+                                                                 sx={{
+                                                                   py: 1.5,
+                                                                   px: 2,
+                                                                   color: darkMode ? '#fff' : '#333',
+                                                                   '&:hover': {
+                                                                     backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                                                   },
+                                                                   gap: 2,
+                                                                 }}
+                                                               >
+                                                                 <Typography variant="body1">
+                                                                   {(() => {
+                                                                     const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                                                     if (user.kupon) {
+                                                                       if (user.kupon_hasznalva) {
+                                                                         return `Kupon: ${user.kupon} (Felhasználva)`;
+                                                                       } else if (user.kupon === 'Nincs nyeremény') {
+                                                                         return `Kupon: ${user.kupon} `;
+                                                                       } else {
+                                                                         return `Kupon: ${user.kupon} (Aktív)`;
+                                                                       }
+                                                                     } else {
+                                                                       return 'Nincs kuponod';
+                                                                     }
+                                                                   })()}
+                                                                 </Typography>
+                                                               </MenuItem>
             
             
                         <MenuItem 
@@ -554,101 +559,118 @@ import PersonIcon from '@mui/icons-material/Person';
                 margin: '0 auto'
               }}
             >
-    {filteredProducts.map((product) => (
-      <Grid 
-        item 
-        xs={6} 
-        sm={6} 
-        md={4} 
-        lg={3} 
-        key={`product-${product.id}`}
-        sx={{
-          padding: { xs: '4px', sm: '8px', md: '12px' }
-        }}
-      >
-        <Link to={`/termek/${product.id}`} style={{ textDecoration: 'none', display: 'block', width: '100%' }}>
-          <Card sx={{
-            height: { xs: '300px', sm: '400px', md: '500px' },
-            backgroundColor: darkMode ? '#333' : 'white',
-            color: darkMode ? 'white' : 'black',
-            transition: 'transform 0.2s',
-            border: darkMode ? '1px solid #fff' : '1px solid #000',
-            '&:hover': {
-              transform: 'scale(1.02)'
-            },
-            display: 'flex',
-            flexDirection: 'column',
+   {filteredProducts.map((product) => (
+  <Grid 
+    item 
+    xs={6} 
+    sm={6} 
+    md={4} 
+    lg={3} 
+    key={`product-${product.id}`}
+    sx={{
+      padding: { xs: '4px', sm: '8px', md: '12px' }
+    }}
+  >
+    <Box sx={{ position: 'relative' }}>
+      {/* Megosztás gomb abszolút pozícióban a kártya felett */}
+      <Box sx={{ 
+        position: 'absolute', 
+        top: '10px', 
+        right: '10px', 
+        zIndex: 1000,
+        backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+        borderRadius: '50%',
+        padding: '4px'
+      }}>
+        <ShareProduct product={product} darkMode={darkMode} />
+      </Box>
+      
+      {/* Termék kártya Link-ben */}
+      <Link to={`/termek/${product.id}`} style={{ textDecoration: 'none', display: 'block', width: '100%' }}>
+        <Card sx={{
+          height: { xs: '300px', sm: '400px', md: '500px' },
+          backgroundColor: darkMode ? '#333' : 'white',
+          color: darkMode ? 'white' : 'black',
+          transition: 'transform 0.2s',
+          border: darkMode ? '1px solid #fff' : '1px solid #000',
+          '&:hover': {
+            transform: 'scale(1.02)'
+          },
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%'
+        }}>
+          {/* Kártya tartalma a megosztás gomb nélkül */}
+          <Box sx={{ 
+            position: 'relative', 
+            height: { xs: '150px', sm: '200px', md: '300px' },
             width: '100%'
           }}>
-            <Box sx={{ 
-              position: 'relative', 
-              height: { xs: '150px', sm: '200px', md: '300px' },
-              width: '100%'
-            }}>
-              <CardMedia
-                component="img"
-                sx={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'contain'
-                }}
-                image={imageMap[product.imageUrl]}
-                alt={product.nev}
-              />
-            </Box>
-            <CardContent sx={{ 
-              flexGrow: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              p: { xs: '8px', sm: '16px' }
-            }}>
-              <Typography 
-                variant="h6" 
-                color={darkMode ? 'white' : 'black'}
-                sx={{ 
-                  fontSize: { xs: '0.8rem', sm: '1rem', md: '1.25rem' },
-                  mb: 0.5,
-                  fontWeight: 'bold',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 1,
-                  WebkitBoxOrient: 'vertical'
-                }}
-              >
-                {product.nev}
-              </Typography>
-              <Typography 
-                variant="h6" 
-                color="primary"
-                sx={{ 
-                  fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' },
-                  fontWeight: 'bold',
-                  mb: 0.5
-                }}
-              >
-                {product.ar} Ft
-              </Typography>
-              <Typography 
-                variant="body2" 
-                color={darkMode ? 'grey.300' : 'text.secondary'}
-                sx={{ 
-                  fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical'
-                }}
-              >
-                {product.termekleiras}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Link>
-      </Grid>
-    ))}
+            <CardMedia
+              component="img"
+              sx={{
+                height: '100%',
+                width: '100%',
+                objectFit: 'contain'
+              }}
+              image={imageMap[product.imageUrl]}
+              alt={product.nev}
+            />
+          </Box>
+          <CardContent sx={{ 
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            p: { xs: '8px', sm: '16px' }
+          }}>
+            <Typography 
+              variant="h6" 
+              color={darkMode ? 'white' : 'black'}
+              sx={{ 
+                fontSize: { xs: '0.8rem', sm: '1rem', md: '1.25rem' },
+                mb: 0.5,
+                fontWeight: 'bold',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 1,
+                WebkitBoxOrient: 'vertical'
+              }}
+            >
+              {product.nev}
+            </Typography>
+            <Typography 
+              variant="h6" 
+              color="primary"
+              sx={{ 
+                fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' },
+                fontWeight: 'bold',
+                mb: 0.5
+              }}
+            >
+              {product.ar} Ft
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color={darkMode ? 'grey.300' : 'text.secondary'}
+              sx={{ 
+                fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
+              }}
+            >
+              {product.termekleiras}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Link>
+    </Box>
+  </Grid>
+))}
   </Grid>
 )}
 

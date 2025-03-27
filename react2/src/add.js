@@ -826,32 +826,34 @@ const handleListKeyDown = (event) => {
                                                </MenuItem>
                      
                                                <MenuItem 
-                                               onClick={handleClose}
-                                               sx={{
-                                                 py: 1.5,
-                                                 px: 2,
-                                                 color: darkMode ? '#fff' : '#333',
-                                                 '&:hover': {
-                                                   backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
-                                                 },
-                                                 gap: 2,
-                                               }}
-                                             >
-                                               <Typography variant="body1">
-                                                 {(() => {
-                                                   const user = JSON.parse(localStorage.getItem('user') || '{}');
-                                                   if (user.kupon) {
-                                                     if (user.kupon_hasznalva) {
-                                                       return `Kupon: ${user.kupon} (Felhasználva)`;
-                                                     } else {
-                                                       return `Kupon: ${user.kupon} (Aktív)`;
-                                                     }
-                                                   } else {
-                                                     return 'Nincs kuponod';
-                                                   }
-                                                 })()}
-                                               </Typography>
-                                             </MenuItem>
+                                                                          onClick={handleClose}
+                                                                          sx={{
+                                                                            py: 1.5,
+                                                                            px: 2,
+                                                                            color: darkMode ? '#fff' : '#333',
+                                                                            '&:hover': {
+                                                                              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                                                            },
+                                                                            gap: 2,
+                                                                          }}
+                                                                        >
+                                                                          <Typography variant="body1">
+                                                                            {(() => {
+                                                                              const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                                                              if (user.kupon) {
+                                                                                if (user.kupon_hasznalva) {
+                                                                                  return `Kupon: ${user.kupon} (Felhasználva)`;
+                                                                                } else if (user.kupon === 'Nincs nyeremény') {
+                                                                                  return `Kupon: ${user.kupon} `;
+                                                                                } else {
+                                                                                  return `Kupon: ${user.kupon} (Aktív)`;
+                                                                                }
+                                                                              } else {
+                                                                                return 'Nincs kuponod';
+                                                                              }
+                                                                            })()}
+                                                                          </Typography>
+                                                                        </MenuItem>
                      
                       
                                   <MenuItem 

@@ -5,10 +5,12 @@ import vision from '@google-cloud/vision';
 import path from 'path';
 import fs from 'fs';
 import mysql from 'mysql2/promise';
+import express from 'express';
+const app = express();
 
 
+  
 let db;
-
 const initDb = async () => {
   try {
     db = await mysql.createConnection({
@@ -27,6 +29,10 @@ const initDb = async () => {
 };
 
 
+
+
+
+
 const storage = multer.memoryStorage(); 
 const upload = multer({ 
   storage: storage,
@@ -39,6 +45,64 @@ const startServer = async () => {
   const app = await initializeApp();
 
   db = await initDb();
+
+  async function getUserProfileImageByUsername(db, username) {
+    const [rows] = await db.execute(
+      'SELECT profile_image FROM user WHERE felhasznalonev = ?',
+      [username]
+    );
+    return rows.length > 0 ? rows[0].profile_image : null;
+  }
+  
+  async function saveUserProfileImageByUsername(db, username, imageData) {
+    await db.execute(
+      'UPDATE user SET profile_image = ? WHERE felhasznalonev = ?',
+      [imageData, username]
+    );
+    return true;
+  }
+  
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+  });
+  
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  
+  // Add hozzá a profilkép kezelő végpontokat
+  app.post('/profile-image', async (req, res) => {
+    try {
+      const { username, imageData } = req.body;
+      
+      if (!username || !imageData) {
+        return res.status(400).json({ success: false, message: 'Hiányzó adatok' });
+      }
+      
+      await saveUserProfileImageByUsername(db, username, imageData);
+      res.json({ success: true, message: 'Profilkép sikeresen mentve' });
+    } catch (error) {
+      console.error('Hiba a profilkép mentésekor:', error);
+      res.status(500).json({ success: false, message: 'Szerver hiba' });
+    }
+  });
+  
+  app.get('/profile-image/:username', async (req, res) => {
+    try {
+      const { username } = req.params;
+      const profileImage = await getUserProfileImageByUsername(db, username);
+      
+      if (profileImage) {
+        res.json({ success: true, profileImage });
+      } else {
+        res.status(404).json({ success: false, message: 'Profilkép nem található' });
+      }
+    } catch (error) {
+      console.error('Hiba a profilkép lekérésekor:', error);
+      res.status(500).json({ success: false, message: 'Szerver hiba' });
+    }
+  });
   
   const storage = multer.diskStorage({
     destination: './kep',
@@ -1207,3 +1271,4 @@ startServer().catch(error => {
   console.error('Failed to start server:', error);
   process.exit(1);
 });
+

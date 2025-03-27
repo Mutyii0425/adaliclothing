@@ -18,6 +18,7 @@ import {
   ClickAwayListener,
   MenuList,
   Badge,
+  Avatar,
   MenuItem
 } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -28,6 +29,7 @@ import { useNavigate } from 'react-router-dom';
 import Footer from './footer';
 import { CircularProgress } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
+import ShareProduct from './ShareProduct';
 
 
 export default function Vinted() {
@@ -45,22 +47,57 @@ export default function Vinted() {
   const anchorRef = useRef(null);
   const navigate = useNavigate();
   
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('http://localhost:5000/products');
-        const data = await response.json();
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setProducts(data);
-      } catch (error) {
-        console.log('Hiba:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+  // A useEffect-ben, ahol a termékeket lekérjük, módosítsuk a kódot:
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5000/products');
+let data = await response.json();
+console.log("Products fetched:", data);
+      
+      // Lekérjük a feltöltők profilképeit
+      const productsWithProfileImages = await Promise.all(data.map(async (product) => {
+        if (product.feltolto) {
+          try {
+            console.log(`Profilkép lekérése: ${product.feltolto}`);
+            const profileResponse = await fetch(`http://localhost:5000/profile-image/${product.feltolto}`);
+            
+            if (!profileResponse.ok) {
+              console.log(`Nem sikerült lekérni a profilképet: ${product.feltolto}, státusz: ${profileResponse.status}`);
+              return product;
+            }
+            
+            const profileData = await profileResponse.json();
+            console.log(`Profilkép válasz: `, profileData);
+            
+            if (profileData.success && profileData.profileImage) {
+              console.log(`Profilkép sikeresen lekérve: ${product.feltolto}`);
+              return {
+                ...product,
+                feltoltoKep: profileData.profileImage
+              };
+            }
+          } catch (error) {
+            console.error(`Hiba a profilkép lekérésekor: ${product.feltolto}`, error);
+          }
+        }
+        return product;
+      }));
+      
+      console.log('Termékek profilképekkel:', productsWithProfileImages);
+      setProducts(productsWithProfileImages);
+    } catch (error) {
+      console.log('Hiba a termékek lekérésekor:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchProducts();
+}, []);
+
+
+
   
   
   useEffect(() => {
@@ -80,18 +117,7 @@ export default function Vinted() {
   }, [navigate]);
   
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/products');
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.log('Hiba a termékek betöltésekor:', error);
-      }
-    };
-    fetchProducts();
-  }, []);
+ 
 
   const filteredProducts = selectedCategory 
       ? products.filter(product => {
@@ -162,6 +188,7 @@ export default function Vinted() {
     };
     checkLoginStatus();
   }, []);
+
     return (
 <div style={{
   backgroundColor: darkMode ? '#333' : '#f5f5f5',
@@ -336,33 +363,35 @@ export default function Vinted() {
                             <Typography variant="body1">Fiókom</Typography>
                           </MenuItem>
 
-                          <MenuItem 
-                          onClick={handleClose}
-                          sx={{
-                            py: 1.5,
-                            px: 2,
-                            color: darkMode ? '#fff' : '#333',
-                            '&:hover': {
-                              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
-                            },
-                            gap: 2,
-                          }}
-                        >
-                          <Typography variant="body1">
-                            {(() => {
-                              const user = JSON.parse(localStorage.getItem('user') || '{}');
-                              if (user.kupon) {
-                                if (user.kupon_hasznalva) {
-                                  return `Kupon: ${user.kupon} (Felhasználva)`;
-                                } else {
-                                  return `Kupon: ${user.kupon} (Aktív)`;
-                                }
-                              } else {
-                                return 'Nincs kuponod';
-                              }
-                            })()}
-                          </Typography>
-                        </MenuItem>
+                         <MenuItem 
+                                                    onClick={handleClose}
+                                                    sx={{
+                                                      py: 1.5,
+                                                      px: 2,
+                                                      color: darkMode ? '#fff' : '#333',
+                                                      '&:hover': {
+                                                        backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                                                      },
+                                                      gap: 2,
+                                                    }}
+                                                  >
+                                                    <Typography variant="body1">
+                                                      {(() => {
+                                                        const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                                        if (user.kupon) {
+                                                          if (user.kupon_hasznalva) {
+                                                            return `Kupon: ${user.kupon} (Felhasználva)`;
+                                                          } else if (user.kupon === 'Nincs nyeremény') {
+                                                            return `Kupon: ${user.kupon} `;
+                                                          } else {
+                                                            return `Kupon: ${user.kupon} (Aktív)`;
+                                                          }
+                                                        } else {
+                                                          return 'Nincs kuponod';
+                                                        }
+                                                      })()}
+                                                    </Typography>
+                                                  </MenuItem>
 
               
                           <MenuItem 
@@ -678,7 +707,7 @@ export default function Vinted() {
       <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
         <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
         <Card sx={{
-  height: '500px',
+ height: '600px',
   backgroundColor: darkMode ? '#333' : 'white',
   color: darkMode ? 'white' : 'black',
   transition: 'transform 0.2s',
@@ -699,20 +728,62 @@ export default function Vinted() {
                 alt={product.nev}
               />
             </Box>
-            <CardContent>
-              <Typography variant="h6" color={darkMode ? 'white' : 'black'}>
-                {product.nev}
-              </Typography>
-              <Typography variant="h6" color="primary">
-                {product.ar} Ft
-              </Typography>
-              <Typography variant="body2" color={darkMode ? 'grey.300' : 'text.secondary'}>
-                {product.leiras}
-              </Typography>
-              <Typography variant="body2" color={darkMode ? 'grey.300' : 'text.secondary'}>
-                Méret: {product.meret}
-              </Typography>
-            </CardContent>
+            <CardContent sx={{ 
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  p: { xs: '8px', sm: '16px' }
+}}>
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <Typography variant="h6" color={darkMode ? 'white' : 'black'}>
+      {product.nev}
+    </Typography>
+    
+    <ShareProduct product={product} darkMode={darkMode} />
+  </Box>
+  
+  {product.feltolto && (
+    <Box sx={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      mt: 1, 
+      mb: 1,
+      gap: 1
+    }}>
+      <Avatar 
+  src={product.feltoltoKep ? `data:image/jpeg;base64,${product.feltoltoKep}` : null} 
+  alt={product.feltolto}
+  sx={{ 
+    width: 24, 
+    height: 24,
+    bgcolor: !product.feltoltoKep ? '#1976d2' : 'transparent'
+  }}
+>
+  {!product.feltoltoKep && product.feltolto.charAt(0).toUpperCase()}
+</Avatar>
+      <Typography 
+        variant="body2" 
+        color={darkMode ? 'grey.400' : 'text.secondary'}
+        sx={{ fontSize: '0.75rem' }}
+      >
+        Feltöltő: {product.feltolto}
+      </Typography>
+    </Box>
+  )}
+  
+  <Typography variant="h6" color="primary">
+    {product.ar} Ft
+  </Typography>
+  
+  <Typography variant="body2" color={darkMode ? 'grey.300' : 'text.secondary'}>
+    {product.leiras}
+  </Typography>
+  
+  <Typography variant="body2" color={darkMode ? 'grey.300' : 'text.secondary'}>
+    Méret: {product.meret}
+  </Typography>
+</CardContent>
           </Card>
         </Link>
       </Grid>

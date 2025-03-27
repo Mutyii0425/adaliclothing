@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
@@ -26,8 +26,54 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import Menu from './menu2';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
+// Profilkép kezelő függvények közvetlenül a komponensben
+const getUserProfileImage = async (username) => {
+  try {
+    const response = await fetch(`http://localhost:5000/profile-image/${username}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      return data.profileImage;
+    }
+    return null;
+  } catch (e) {
+    console.error('Hiba a profilkép lekérésekor:', e);
+    return null;
+  }
+};
 
+const saveUserProfileImage = async (username, imageDataUrl) => {
+  try {
+    console.log("Sending profile image for:", username);
+    console.log("Image data length:", imageDataUrl.length);
+    
+    const response = await fetch('http://localhost:5000/profile-image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        imageData: imageDataUrl
+      })
+    });
+    
+    if (!response.ok) {
+      console.error("Server response not OK:", response.status, response.statusText);
+      const text = await response.text();
+      console.error("Response text:", text);
+      return false;
+    }
+    
+    const data = await response.json();
+    return data.success;
+  } catch (e) {
+    console.error('Hiba a profilkép mentésekor:', e);
+    return false;
+  }
+};
 
 export default function Fiokom() {
   const [userData, setUserData] = useState(null);
@@ -36,6 +82,8 @@ export default function Fiokom() {
   const navigate = useNavigate();
   const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
   const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 0);
+  const [profileImage, setProfileImage] = useState(null);
+  const fileInputRef = useRef(null);
   
   const [couponInfo, setCouponInfo] = useState({
     hasCoupon: false,
@@ -56,9 +104,47 @@ export default function Fiokom() {
         couponCode: user.kupon || '',
         isUsed: !!user.kupon_hasznalva
       });
+      
+      // Profilkép lekérése
+      if (user.username) {
+        loadProfileImage(user.username);
+      }
     }
   }, []);
   
+  const loadProfileImage = async (username) => {
+    const image = await getUserProfileImage(username);
+    if (image) {
+      setProfileImage(image);
+    }
+  };
+  
+  const handleProfileImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const imageData = e.target.result;
+      setProfileImage(imageData);
+      
+      if (userData && userData.username) {
+        const success = await saveUserProfileImage(userData.username, imageData);
+        if (success) {
+          console.log('Profilkép sikeresen feltöltve');
+        } else {
+          console.error('Hiba a profilkép feltöltésekor');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  const openFileSelector = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   const [orderStats, setOrderStats] = useState({
     totalOrders: 0,
@@ -312,8 +398,18 @@ export default function Fiokom() {
                   position: 'relative',
                   mt: -8
                 }}>
-               
+                  {/* Rejtett file input a profilkép feltöltéshez */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    ref={fileInputRef}
+                    onChange={handleProfileImageUpload}
+                  />
+                  
+                  {/* Avatar profilképpel vagy alapértelmezett betűvel */}
                   <Avatar 
+                    src={profileImage}
                     sx={{ 
                       width: 120, 
                       height: 120, 
@@ -322,12 +418,51 @@ export default function Fiokom() {
                       fontSize: '3rem',
                       border: '5px solid',
                       borderColor: darkMode ? '#1c1c1c' : 'white',
-                      boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      '&:hover': {
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }
+                      }
                     }}
+                    onClick={openFileSelector}
                   >
                     {userData?.username?.charAt(0)?.toUpperCase() || 'A'}
                   </Avatar>
                   
+                  {/* Profilkép feltöltés gomb */}
+                  <IconButton 
+                    onClick={openFileSelector}
+                    sx={{
+                      position: 'absolute',
+                      bottom: '65%',  // Position it at the bottom of the Avatar
+                      right: '35%',   // Position it to the right side of the Avatar
+                      backgroundColor: darkMode ? 'rgba(25, 118, 210, 0.8)' : 'rgba(25, 118, 210, 0.9)',
+                      color: '#fff',
+                      width: '32px',
+                      height: '32px',
+                      '&:hover': {
+                        backgroundColor: '#1976d2'
+                      },
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                      border: '2px solid',
+                      borderColor: darkMode ? '#1c1c1c' : 'white',
+                    }}
+                  >
+                    <PhotoCameraIcon fontSize="medium" />
+                  </IconButton>
 
                   <Typography variant="h5" gutterBottom sx={{ 
                     fontWeight: 600,

@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
+
 class UserModel {
   constructor(db) {
     this.db = db;
@@ -15,6 +16,7 @@ class UserModel {
     const [rows] = await this.db.execute('SELECT * FROM user WHERE felhasznalonev = ?', [username]);
     return rows.length > 0 ? rows[0] : null;
   }
+
 
   async findByResetToken(token) {
     const [rows] = await this.db.execute('SELECT * FROM user WHERE reset_token = ?', [token]);
@@ -61,7 +63,6 @@ async create(userData) {
     f_azonosito: userId 
   };
 }
-
 
 
   async updatePassword(userId, newPassword) {
@@ -123,5 +124,7 @@ async create(userData) {
     await this.db.execute('DELETE FROM user WHERE f_azonosito = ?', [userId]);
   }
 }
+
+
 
 export default UserModel;

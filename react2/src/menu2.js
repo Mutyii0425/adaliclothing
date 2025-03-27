@@ -21,21 +21,28 @@ import PeopleIcon from '@mui/icons-material/People';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import InfoIcon from '@mui/icons-material/Info';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import logo from './kep/fehlogo5.png'; 
+import logo from './kep/fehlogo.png'; 
 
 const Menu = ({ sideMenuActive, toggleSideMenu }) => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userProfileImage, setUserProfileImage] = useState(null);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const checkAdminStatus = () => {
+    const checkUserData = () => {
       const userData = localStorage.getItem('user');
       if (userData) {
         const user = JSON.parse(userData);
         setIsAdmin(user.email === 'adaliclothing@gmail.com');
+        setUserName(user.username || user.felhasznalonev || '');
+        
+        if (user.profileImage) {
+          setUserProfileImage(user.profileImage);
+        }
       }
     };
     
-    checkAdminStatus();
+    checkUserData();
   }, []);
   
 
@@ -77,16 +84,18 @@ const Menu = ({ sideMenuActive, toggleSideMenu }) => {
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar 
-              src={logo} 
-              alt="Adali Clothing" 
+              src={userProfileImage || logo} 
+              alt={userName || "Adali Clothing"} 
               sx={{ 
                 width: 40, 
                 height: 40,
-                backgroundColor: 'rgba(255,255,255,0.1)'
+                backgroundColor: userProfileImage ? 'transparent' : 'rgba(255,255,255,0.1)'
               }} 
-            />
+            >
+              {!userProfileImage && userName && userName.charAt(0).toUpperCase()}
+            </Avatar>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Adali Clothing
+              {userName || "Adali Clothing"}
             </Typography>
           </Box>
           <IconButton 
