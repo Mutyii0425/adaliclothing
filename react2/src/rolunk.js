@@ -18,6 +18,8 @@ import {
   FormControlLabel, 
   Switch,  
   MenuList,
+  useMediaQuery,
+  useTheme,
   MenuItem
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
@@ -91,6 +93,10 @@ const AboutUs = () => {
     const cartItemCount = cartItems.reduce((total, item) => total + item.mennyiseg, 0);
     const anchorRef = useRef(null);
     const [open, setOpen] = useState(false);
+
+    const theme = useTheme();
+        const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+        const isExtraSmall = useMediaQuery('(max-width:400px)');
 
     const handleClose = (event = {}) => {
       if (event.target && anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -191,94 +197,100 @@ const AboutUs = () => {
         <Menu sideMenuActive={sideMenuActive} toggleSideMenu={toggleSideMenu} />
       </Box>
       <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: darkMode ? '#333' : '#333',
-        padding: '10px 20px',
-        position: 'relative',
-        width: '100%',
-        boxSizing: 'border-box',
-        borderBottom: '3px solid #ffffff', 
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
-        marginBottom: '10px', 
-      }}
-    >
-      <IconButton
-        onClick={toggleSideMenu}
-        style={{ color: darkMode ? 'white' : 'white' }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: darkMode ? '#333' : '#333',
+          padding: isExtraSmall ? '8px 12px' : '10px 20px',
+          position: 'relative',
+          width: '100%',
+          boxSizing: 'border-box',
+          borderBottom: '3px solid #ffffff',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
+          marginBottom: '10px', 
+        }}
       >
-        <MenuIcon />
-      </IconButton>
-    
-      <Typography 
-           variant="h1"
-           sx={{
-             fontWeight: 'bold',
-             fontSize: {
-              xs: '1.1rem',    
-              sm: '1.5rem',    
-              md: '2rem'       
+        <IconButton
+          onClick={toggleSideMenu}
+          style={{ 
+            color: darkMode ? 'white' : 'white',
+            padding: isExtraSmall ? '4px' : '8px'
+          }}
+        >
+          <MenuIcon fontSize={isExtraSmall ? "small" : "medium"} />
+        </IconButton>
+      
+        <Typography
+          variant="h1"
+          sx={{
+            fontWeight: 'bold',
+            fontSize: {
+              xs: isExtraSmall ? '0.9rem' : '1.1rem',
+              sm: '1.5rem',   
+              md: '2rem'      
             },
-             textAlign: 'center',
-             color: 'white',
-             position: 'absolute',
+            textAlign: 'center',
+            color: 'white',
+            position: 'absolute',
             left: '50%',
-             transform: 'translateX(-50%)',
-             width: 'auto',
-             pointerEvents: 'none'
-           }}
-         >
-           Adali Clothing
-         </Typography>
-        <Box sx={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {isLoggedIn ? (
-              <Box sx={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-           <IconButton
-  onClick={handleCartClick}
-  sx={{
-    color: '#fff',
-    '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    }
-  }}
->
-   <Badge 
-                    badgeContent={cartItemCount} 
-                    color="primary"
-                    sx={{ 
-                      '& .MuiBadge-badge': { 
-                        backgroundColor: '#fff', 
-                        color: '#333' 
-                      } 
-                    }}
-                  >
-                    <ShoppingCartIcon />
-                  </Badge>
-</IconButton>
-
-  <IconButton
-                                ref={anchorRef}
-                                onClick={handleToggle}
-                                sx={{
-                                  color: '#fff',
-                                  zIndex: 1300,
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                                  borderRadius: '50%',
-                                  padding: '8px',
-                                  transition: 'all 0.3s ease',
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                    transform: 'scale(1.05)',
-                                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)'
-                                  }
-                                }}
-                              >
-                                <PersonIcon fontSize="medium" />
-                              </IconButton>
-                              <Popper
+            transform: 'translateX(-50%)',
+            width: 'auto',
+            pointerEvents: 'none'
+          }}
+        >
+          Adali Clothing
+        </Typography>
+        <Box sx={{ display: 'flex', gap: isExtraSmall ? '5px' : '10px', alignItems: 'center' }}>
+          {isLoggedIn ? (
+            <Box sx={{ display: 'flex', gap: isExtraSmall ? '5px' : '10px', alignItems: 'center' }}>
+              <IconButton
+                onClick={handleCartClick}
+                sx={{
+                  color: '#fff',
+                  padding: isExtraSmall ? '4px' : '8px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  }
+                }}
+              >
+                <Badge 
+                  badgeContent={cartItemCount} 
+                  color="primary"
+                  sx={{ 
+                    '& .MuiBadge-badge': { 
+                      backgroundColor: '#fff', 
+                      color: '#333',
+                      fontSize: isExtraSmall ? '0.6rem' : '0.75rem',
+                      minWidth: isExtraSmall ? '14px' : '20px',
+                      height: isExtraSmall ? '14px' : '20px'
+                    } 
+                  }}
+                >
+                  <ShoppingCartIcon fontSize={isExtraSmall ? "small" : "medium"} />
+                </Badge>
+              </IconButton>
+              <IconButton
+                ref={anchorRef}
+                onClick={handleToggle}
+                sx={{
+                  color: '#fff',
+                  zIndex: 1300,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '50%',
+                  padding: isExtraSmall ? '4px' : '8px',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)'
+                  }
+                }}
+              >
+                <PersonIcon fontSize={isExtraSmall ? "small" : "medium"} />
+              </IconButton>
+              <Popper
                 open={open}
                 anchorEl={anchorRef.current}
                 placement="bottom-start"
@@ -309,7 +321,7 @@ const AboutUs = () => {
                     <Paper
                       sx={{
                         backgroundColor: darkMode ? '#2d2d2d' : '#ffffff',
-                        minWidth: '200px',
+                        minWidth: isExtraSmall ? '180px' : '200px',
                       }}
                     >
                       <ClickAwayListener onClickAway={handleClose}>
@@ -321,8 +333,8 @@ const AboutUs = () => {
                           <MenuItem 
                             onClick={handleClose}
                             sx={{
-                              py: 1.5,
-                              px: 2,
+                              py: isExtraSmall ? 1 : 1.5,
+                              px: isExtraSmall ? 1.5 : 2,
                               color: darkMode ? '#fff' : '#333',
                               '&:hover': {
                                 backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
@@ -330,7 +342,10 @@ const AboutUs = () => {
                               gap: 2,
                             }}
                           >
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            <Typography variant="body1" sx={{ 
+                              fontWeight: 500,
+                              fontSize: isExtraSmall ? '0.8rem' : 'inherit'
+                            }}>
                               {userName} profilja
                             </Typography>
                           </MenuItem>
@@ -341,8 +356,8 @@ const AboutUs = () => {
                               navigate('/fiokom');
                             }}
                             sx={{
-                              py: 1.5,
-                              px: 2,
+                              py: isExtraSmall ? 1 : 1.5,
+                              px: isExtraSmall ? 1.5 : 2,
                               color: darkMode ? '#fff' : '#333',
                               '&:hover': {
                                 backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
@@ -350,133 +365,128 @@ const AboutUs = () => {
                               gap: 2,
                             }}
                           >
-                            <Typography variant="body1">Fiókom</Typography>
+                            <Typography variant="body1" sx={{ fontSize: isExtraSmall ? '0.8rem' : 'inherit' }}>
+                              Fiókom
+                            </Typography>
                           </MenuItem>
 
                           <MenuItem 
-                                                     onClick={handleClose}
-                                                     sx={{
-                                                       py: 1.5,
-                                                       px: 2,
-                                                       color: darkMode ? '#fff' : '#333',
-                                                       '&:hover': {
-                                                         backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
-                                                       },
-                                                       gap: 2,
-                                                     }}
-                                                   >
-                                                     <Typography variant="body1">
-                                                       {(() => {
-                                                         const user = JSON.parse(localStorage.getItem('user') || '{}');
-                                                         if (user.kupon) {
-                                                           if (user.kupon_hasznalva) {
-                                                             return `Kupon: ${user.kupon} (Felhasználva)`;
-                                                           } else if (user.kupon === 'Nincs nyeremény') {
-                                                             return `Kupon: ${user.kupon} `;
-                                                           } else {
-                                                             return `Kupon: ${user.kupon} (Aktív)`;
-                                                           }
-                                                         } else {
-                                                           return 'Nincs kuponod';
-                                                         }
-                                                       })()}
-                                                     </Typography>
-                                                   </MenuItem>
+                            onClick={handleClose}
+                            sx={{
+                              py: isExtraSmall ? 1 : 1.5,
+                              px: isExtraSmall ? 1.5 : 2,
+                              color: darkMode ? '#fff' : '#333',
+                              '&:hover': {
+                                backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)',
+                              },
+                              gap: 2,
+                            }}
+                          >
+                            <Typography variant="body1" sx={{ fontSize: isExtraSmall ? '0.8rem' : 'inherit' }}>
+                              {(() => {
+                                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                if (user.kupon) {
+                                  if (user.kupon_hasznalva) {
+                                    return `Kupon: ${user.kupon} (Felhasználva)`;
+                                  } else if (user.kupon === 'Nincs nyeremény') {
+                                    return `Kupon: ${user.kupon} `;
+                                  } else {
+                                    return `Kupon: ${user.kupon} (Aktív)`;
+                                  }
+                                } else {
+                                  return 'Nincs kuponod';
+                                }
+                              })()}
+                            </Typography>
+                          </MenuItem>
 
+                          <MenuItem 
+                            onClick={handleLogout}
+                            sx={{
+                              py: isExtraSmall ? 1 : 1.5,
+                              px: isExtraSmall ? 1.5 : 2,
+                              color: '#ff4444',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255,68,68,0.1)',
+                              },
+                              gap: 2,
+                              borderTop: '1px solid',
+                              borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                              mt: 1,
+                            }}
+                          >
+                            <Typography variant="body1" sx={{ fontSize: isExtraSmall ? '0.8rem' : 'inherit' }}>
+                              Kijelentkezés
+                            </Typography>
+                          </MenuItem>
+                        </MenuList>
+                      </ClickAwayListener>
+                    </Paper>
+                  </Grow>
+                )}
+              </Popper>
+            </Box>
+          ) : (
+            <>
+              <Button
+  component={Link}
+  to="/sign"
+  sx={{
+    color: '#fff',
+    border: '1px solid #fff',
+    borderRadius: '5px',
+    padding: {
+      xs: isExtraSmall ? '1px 3px' : '2px 6px',
+      sm: '5px 10px'
+    },
+    fontSize: {
+      xs: isExtraSmall ? '0.55rem' : '0.7rem',
+      sm: '1rem'
+    },
+    whiteSpace: 'nowrap',
+    minWidth: isExtraSmall ? '40px' : 'auto',
+    height: isExtraSmall ? '24px' : 'auto',
+    marginRight: isExtraSmall ? '2px' : 'auto',
+    '&:hover': {
+      backgroundColor: '#fff',
+      color: '#333',
+    },
+  }}
+>
+  {isExtraSmall ? 'Sign In' : 'Sign In'}
+</Button>
 
-            <MenuItem 
-              onClick={handleLogout}
-              sx={{
-                py: 1.5,
-                px: 2,
-                color: '#ff4444',
-                '&:hover': {
-                  backgroundColor: 'rgba(255,68,68,0.1)',
-                },
-                gap: 2,
-                borderTop: '1px solid',
-                borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                mt: 1,
-              }}
-            >
-              <Typography variant="body1">Kijelentkezés</Typography>
-            </MenuItem>
-          </MenuList>
-        </ClickAwayListener>
-      </Paper>
-    </Grow>
-  )}
-</Popper>
+<Button
+  component={Link}
+  to="/signup"
+  sx={{
+    color: '#fff',
+    border: '1px solid #fff',
+    borderRadius: '5px',
+    padding: {
+      xs: isExtraSmall ? '1px 3px' : '2px 6px',
+      sm: '5px 10px'
+    },
+    fontSize: {
+      xs: isExtraSmall ? '0.55rem' : '0.7rem',
+      sm: '1rem'
+    },
+    whiteSpace: 'nowrap',
+    minWidth: isExtraSmall ? '40px' : 'auto',
+    height: isExtraSmall ? '24px' : 'auto',
+    '&:hover': {
+      backgroundColor: '#fff',
+      color: '#333',
+    },
+  }}
+>
+  {isExtraSmall ? 'Sign Up' : 'Sign Up'}
+</Button>
 
-              </Box>
-            ) : (
-              <>
-<Box sx={{ 
-  display: 'flex', 
-  justifyContent: {
-    xs: 'flex-end', 
-    sm: 'flex-end'  
-  },
-  gap: {
-    xs: '5px',      
-    sm: '10px'       
-  }
-}}>
-  <Button
-                  component={Link}
-                  to="/sign"
-                  sx={{
-                    color: '#fff',
-                    border: '1px solid #fff',
-                    borderRadius: '5px',
-                    padding: {
-                      xs: '2px 6px',   
-                      sm: '5px 10px'
-                    },
-                    fontSize: {
-                      xs: '0.7rem',   
-                      sm: '1rem'
-                    },
-                    whiteSpace: 'nowrap',
-                    '&:hover': {
-                      backgroundColor: '#fff',
-                      color: '#333',
-                    },
-                  }}
-                >
-                  Sign In
-                </Button>
-
-                <Button
-                  component={Link}
-                  to="/signup"
-                  sx={{
-                    color: '#fff',
-                    border: '1px solid #fff',
-                    borderRadius: '5px',
-                    padding: {
-                      xs: '2px 6px',  
-                      sm: '5px 10px'
-                    },
-                    fontSize: {
-                      xs: '0.7rem',    
-                      sm: '1rem'
-                    },
-                    whiteSpace: 'nowrap',
-                    '&:hover': {
-                      backgroundColor: '#fff',
-                      color: '#333',
-                    },
-                  }}
-                >
-                  Sign Up
-                </Button>
-</Box>
-
-              </>
-            )}
-          </Box>
-        </div>
+            </>
+          )}
+        </Box>
+      </div>
         <FormGroup
         sx={{
           position: 'absolute',

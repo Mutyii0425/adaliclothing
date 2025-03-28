@@ -18,6 +18,13 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import darkLogo from './kep/logo02.png';
+import { 
+ 
+  useTheme,
+  useMediaQuery
+  
+  
+} from '@mui/material';
 
 const randomColor = () => {
   const r = Math.floor(Math.random() * 256);
@@ -41,7 +48,9 @@ export default function SignUpForm() {
   const [errorTitle, setErrorTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-
+ const theme = useTheme();
+          const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+          const isExtraSmall = useMediaQuery('(max-width:400px)');
   const dvdLogoRef = useRef({
     x: window.innerWidth * 0.1, 
     y: window.innerHeight * 0.1, 
@@ -251,101 +260,117 @@ export default function SignUpForm() {
               backgroundBlendMode: 'multiply'
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: '#333',
-                color: '#fff',
-                padding: '10px 20px',
-              }}
-            >
-              <IconButton sx={{ color: 'white' }}>
-                <MenuIcon />
-              </IconButton>
-              <Typography
-                variant="h1"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: {
-                    xs: '1.1rem',
-                    sm: '1.5rem',
-                    md: '2rem'
-                  },
-                  textAlign: 'center',
-                  color: 'white',
-                  position: 'absolute',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 'auto',
-                  pointerEvents: 'none'
-                }}
-              >
-                Adali Clothing
-              </Typography>
-              <Box sx={{
-                display: 'flex',
-                gap: {
-                  xs: '3px',
-                  sm: '10px'
-                },
-                flex: '0 0 auto',
-                zIndex: 1,
-                marginLeft: '50px'
-              }}>
-                <Button
-                  component={Link}
-                  to="/sign"
-                  sx={{
-                    color: '#fff',
-                    border: '1px solid #fff',
-                    borderRadius: '5px',
-                    padding: {
-                      xs: '2px 6px',
-                      sm: '5px 10px'
-                    },
-                    fontSize: {
-                      xs: '0.7rem',
-                      sm: '1rem'
-                    },
-                    whiteSpace: 'nowrap',
-                    '&:hover': {
-                      backgroundColor: '#fff',
-                      color: '#333',
-                    },
-                  }}
-        
-  >
-    Sign In
-  </Button>
-  <Button
-    component={Link}
-    to="/signup"
-    sx={{
-      color: '#fff',
-      border: '1px solid #fff',
-      borderRadius: '5px',
-      padding: {
-        xs: '2px 6px',  
-        sm: '5px 10px'
-      },
-      fontSize: {
-        xs: '0.7rem',  
-        sm: '1rem'
-      },
-      whiteSpace: 'nowrap',
-      '&:hover': {
-        backgroundColor: '#fff',
-        color: '#333',
-      },
+           <Box
+  sx={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#333',
+    color: '#fff',
+    padding: {
+      xs: isExtraSmall ? '8px 10px' : '10px 15px',
+      sm: '10px 20px'
+    },
+    position: 'relative',
+    width: '100%',
+    boxSizing: 'border-box'
+  }}
+>
+  <IconButton 
+    sx={{ 
+      color: 'white',
+      padding: isExtraSmall ? '4px' : '8px'
     }}
   >
-    Sign Up
-  </Button>
+    <MenuIcon fontSize={isExtraSmall ? "small" : "medium"} />
+  </IconButton>
+  
+  <Typography
+    variant="h1"
+    sx={{
+      fontWeight: 'bold',
+      fontSize: {
+        xs: isExtraSmall ? '0.9rem' : '1.1rem',
+        sm: '1.5rem',
+        md: '2rem'
+      },
+      textAlign: 'center',
+      color: 'white',
+      position: 'absolute',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: 'auto',
+      pointerEvents: 'none'
+    }}
+  >
+    Adali Clothing
+  </Typography>
+  
+  <Box sx={{
+    display: 'flex',
+    gap: {
+      xs: isExtraSmall ? '2px' : '3px',
+      sm: '10px'
+    },
+    flex: '0 0 auto',
+    zIndex: 1,
+    marginLeft: isExtraSmall ? '20px' : '50px'
+  }}>
+    <Button
+      component={Link}
+      to="/sign"
+      sx={{
+        color: '#fff',
+        border: '1px solid #fff',
+        borderRadius: '5px',
+        padding: {
+          xs: isExtraSmall ? '1px 3px' : '2px 6px',
+          sm: '5px 10px'
+        },
+        fontSize: {
+          xs: isExtraSmall ? '0.55rem' : '0.7rem',
+          sm: '1rem'
+        },
+        whiteSpace: 'nowrap',
+        minWidth: isExtraSmall ? '40px' : 'auto',
+        height: isExtraSmall ? '24px' : 'auto',
+        '&:hover': {
+          backgroundColor: '#fff',
+          color: '#333',
+        },
+      }}
+    >
+      {isExtraSmall ? 'Sign In' : 'Sign In'}
+    </Button>
+    
+    <Button
+      component={Link}
+      to="/signup"
+      sx={{
+        color: '#fff',
+        border: '1px solid #fff',
+        borderRadius: '5px',
+        padding: {
+          xs: isExtraSmall ? '1px 3px' : '2px 6px',
+          sm: '5px 10px'
+        },
+        fontSize: {
+          xs: isExtraSmall ? '0.55rem' : '0.7rem',
+          sm: '1rem'
+        },
+        whiteSpace: 'nowrap',
+        minWidth: isExtraSmall ? '40px' : 'auto',
+        height: isExtraSmall ? '24px' : 'auto',
+        '&:hover': {
+          backgroundColor: '#fff',
+          color: '#333',
+        },
+      }}
+    >
+      {isExtraSmall ? 'Sign Up' : 'Sign Up'}
+    </Button>
+  </Box>
 </Box>
-
-      </Box>
 
    
       <Container
@@ -520,29 +545,54 @@ export default function SignUpForm() {
             </Button>
           </Box>
         </Box>
-
         <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => window.history.back()}
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            backgroundColor: '#444',
-            alignItems: 'center',
-            position: 'absolute',
-            top: 12,
-            left: 16,
-            zIndex: 1000,
-            transition: 'background-color 0.3s ease',
-            '&:hover': {
-              backgroundColor: '#666',
-              transform: 'scale(1.05)',
-            },
-          }}
-        >
-          <ArrowBackIcon sx={{ marginRight: 1 }} />
-        </Button>
+  variant="contained"
+  color="secondary"
+  onClick={() => window.history.back()}
+  sx={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    backgroundColor: '#444',
+    alignItems: 'center',
+    position: 'absolute',
+    top: {
+      xs: isExtraSmall ? 8 : 12,
+      sm: 12
+    },
+    left: {
+      xs: isExtraSmall ? 8 : 16,
+      sm: 16
+    },
+    padding: {
+      xs: isExtraSmall ? '4px 8px' : '6px 12px',
+      sm: '8px 16px'
+    },
+    minWidth: {
+      xs: isExtraSmall ? '32px' : '40px',
+      sm: 'auto'
+    },
+    zIndex: 1000,
+    transition: 'background-color 0.3s ease',
+    '&:hover': {
+      backgroundColor: '#666',
+      transform: 'scale(1.05)',
+    },
+  }}
+>
+  <ArrowBackIcon 
+    sx={{ 
+      marginRight: {
+        xs: isExtraSmall ? 0 : 1,
+        sm: 1
+      },
+      fontSize: {
+        xs: isExtraSmall ? '1rem' : '1.25rem',
+        sm: '1.5rem'
+      }
+    }} 
+  />
+</Button>
+
 
         <FormGroup
           sx={{
