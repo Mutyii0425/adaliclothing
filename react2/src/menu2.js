@@ -28,23 +28,35 @@ const Menu = ({ sideMenuActive, toggleSideMenu }) => {
   const [userProfileImage, setUserProfileImage] = useState(null);
   const [userName, setUserName] = useState('');
 
-  useEffect(() => {
-    const checkUserData = () => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        const user = JSON.parse(userData);
-        setIsAdmin(user.email === 'adaliclothing@gmail.com');
-        setUserName(user.username || user.felhasznalonev || '');
-        
-        if (user.profileImage) {
-          setUserProfileImage(user.profileImage);
-        }
+  const checkUserData = () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setIsAdmin(user.email === 'adaliclothing@gmail.com');
+      setUserName(user.username || user.felhasznalonev || '');
+      
+      if (user.profileImage) {
+        setUserProfileImage(user.profileImage);
       }
+    }
+  };
+
+  useEffect(() => {
+    checkUserData();
+    
+    // Listen for profile image updates
+    const handleProfileImageUpdate = () => {
+      console.log('Profile image update detected in menu2.js');
+      checkUserData();
     };
     
-    checkUserData();
+    window.addEventListener('profileImageUpdated', handleProfileImageUpdate);
+    
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener('profileImageUpdated', handleProfileImageUpdate);
+    };
   }, []);
-  
 
   const menuItems = [
     { text: 'Kezdőlap', icon: <HomeIcon />, path: '/' },

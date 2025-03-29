@@ -8,60 +8,62 @@ import mysql from 'mysql2/promise';
 import express from 'express';
 const app = express();
 
-
-  
-let db;
+// Create a connection pool instead of a single connection
+let pool;
 const initDb = async () => {
   try {
-    db = await mysql.createConnection({
+    pool = mysql.createPool({
       host: 'localhost',
       user: 'webshoppp',
       password: 'Premo900',
-      database: 'webshoppp'
+      database: 'webshoppp',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
     });
     
-    console.log('Adatbázis kapcsolat sikeresen létrejött');
-    return db;
+    console.log('Adatbázis kapcsolat pool sikeresen létrejött');
+    return pool;
   } catch (error) {
     console.error('Hiba az adatbázis kapcsolat létrehozásakor:', error);
     return null;
   }
 };
 
-
-
-
-
-
-const storage = multer.memoryStorage(); 
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, 
-  }
-});
-
-const startServer = async () => {
-  const app = await initializeApp();
-
-  db = await initDb();
-
-  async function getUserProfileImageByUsername(db, username) {
-    const [rows] = await db.execute(
+// Update the getUserProfileImageByUsername function to use the pool
+async function getUserProfileImageByUsername(pool, username) {
+  try {
+    const [rows] = await pool.execute(
       'SELECT profile_image FROM user WHERE felhasznalonev = ?',
       [username]
     );
     return rows.length > 0 ? rows[0].profile_image : null;
+  } catch (error) {
+    console.error('Hiba a profilkép lekérésekor az adatbázisból:', error);
+    return null;
   }
-  
-  async function saveUserProfileImageByUsername(db, username, imageData) {
-    await db.execute(
+}
+
+// Update the saveUserProfileImageByUsername function to use the pool
+async function saveUserProfileImageByUsername(pool, username, imageData) {
+  try {
+    await pool.execute(
       'UPDATE user SET profile_image = ? WHERE felhasznalonev = ?',
       [imageData, username]
     );
     return true;
+  } catch (error) {
+    console.error('Hiba a profilkép mentésekor az adatbázisba:', error);
+    throw error;
   }
-  
+}
+
+const startServer = async () => {
+  const app = await initializeApp();
+
+  // Initialize the database pool
+  pool = await initDb();
+
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -71,7 +73,7 @@ const startServer = async () => {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
   
-  // Add hozzá a profilkép kezelő végpontokat
+  // Update the profile image endpoints to use the pool and add error handling
   app.post('/profile-image', async (req, res) => {
     try {
       const { username, imageData } = req.body;
@@ -80,18 +82,41 @@ const startServer = async () => {
         return res.status(400).json({ success: false, message: 'Hiányzó adatok' });
       }
       
-      await saveUserProfileImageByUsername(db, username, imageData);
-      res.json({ success: true, message: 'Profilkép sikeresen mentve' });
+      // Check if the pool is available
+      if (!pool) {
+        console.error('Adatbázis kapcsolat nem elérhető');
+        return res.status(500).json({ success: false, message: 'Adatbázis kapcsolat nem elérhető' });
+      }
+      
+      await saveUserProfileImageByUsername(pool, username, imageData);
+      res.json({ 
+        success: true, 
+        message: 'Profilkép sikeresen mentve',
+        profileImage: imageData
+      });
     } catch (error) {
       console.error('Hiba a profilkép mentésekor:', error);
-      res.status(500).json({ success: false, message: 'Szerver hiba' });
+      
+      // Send a more detailed error response
+      res.status(500).json({ 
+        success: false, 
+        message: 'Szerver hiba a profilkép mentésekor',
+        error: error.message
+      });
     }
   });
   
   app.get('/profile-image/:username', async (req, res) => {
     try {
       const { username } = req.params;
-      const profileImage = await getUserProfileImageByUsername(db, username);
+      
+      // Check if the pool is available
+      if (!pool) {
+        console.error('Adatbázis kapcsolat nem elérhető');
+        return res.status(500).json({ success: false, message: 'Adatbázis kapcsolat nem elérhető' });
+      }
+      
+      const profileImage = await getUserProfileImageByUsername(pool, username);
       
       if (profileImage) {
         res.json({ success: true, profileImage });
@@ -100,8 +125,33 @@ const startServer = async () => {
       }
     } catch (error) {
       console.error('Hiba a profilkép lekérésekor:', error);
-      res.status(500).json({ success: false, message: 'Szerver hiba' });
+      res.status(500).json({ 
+        success: false, 
+        message: 'Szerver hiba a profilkép lekérésekor',
+        error: error.message
+      });
     }
+  });
+
+  async function checkDatabaseConnection() {
+    try {
+      await pool.query('SELECT 1');
+      return true;
+    } catch (error) {
+      console.error('Adatbázis kapcsolat ellenőrzése sikertelen:', error);
+      return false;
+    }
+  }
+  
+  // Add a health check endpoint
+  app.get('/api/health', async (req, res) => {
+    const dbConnected = await checkDatabaseConnection();
+    
+    res.json({
+      status: 'ok',
+      database: dbConnected ? 'connected' : 'disconnected',
+      timestamp: new Date().toISOString()
+    });
   });
   
   const storage = multer.diskStorage({

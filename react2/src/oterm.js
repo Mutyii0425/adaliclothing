@@ -456,84 +456,53 @@ import ShareProduct from './ShareProduct';
         </FormGroup>
 
         <Container maxWidth="xl" sx={{ mt: 8, mb: 4 }}>
-          <Typography variant="h4" sx={{ mb: 4, textAlign: 'center', color: darkMode ? 'white' : 'black' }}>
-            Összes Termékünk
-          </Typography>
+        <Box sx={{ 
+  display: 'flex', 
+  justifyContent: 'center', 
+  gap: 1.5, 
+  mb: 5, 
+  flexWrap: 'wrap',
+  marginTop: '30px'
+}}>
+  {[
+    { id: null, name: 'Összes' },
+    { id: 'Pólók', name: 'Pólók' },
+    { id: 'Nadrágok', name: 'Nadrágok' },
+    { id: 'Pulóverek', name: 'Pulloverek' },
+    { id: 'Zoknik', name: 'Zoknik' },
 
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: 2, 
-            mb: 4, 
-            flexWrap: 'wrap',
-            marginTop: '20px'
-          }}>
-            <Button 
-              variant="contained"
-              onClick={() => setSelectedCategory(null)}
-              sx={{ 
-                backgroundColor: !selectedCategory ? '#333' : '#555',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: !selectedCategory ? '#444' : '#666',
-                }
-              }}
-            >
-              Összes
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setSelectedCategory('Pólók')}
-              sx={{ 
-                backgroundColor: selectedCategory === 'Pólók' ? '#333' : '#555',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: selectedCategory === 'Pólók' ? '#444' : '#666',
-                }
-              }}
-            >
-              Pólók
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setSelectedCategory('Nadrágok')}
-              sx={{ 
-                backgroundColor: selectedCategory === 'Nadrágok' ? '#333' : '#555',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: selectedCategory === 'Nadrágok' ? '#444' : '#666',
-                }
-              }}
-            >
-              Nadrágok
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setSelectedCategory('Pulóverek')}
-              sx={{ 
-                backgroundColor: selectedCategory === 'Pulóverek' ? '#333' : '#555',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: selectedCategory === 'Pulóverek' ? '#444' : '#666',
-                }
-              }}
-            >
-              Pulloverek
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setSelectedCategory('Zoknik')}
-              sx={{ 
-                backgroundColor: selectedCategory === 'Zoknik' ? '#333' : '#555',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: selectedCategory === 'Zoknik' ? '#444' : '#666',
-                }
-              }}
-            >
-              Zoknik
-            </Button>
-          </Box>
+  ].map(category => (
+    <Button 
+      key={category.id || 'all'}
+      variant={selectedCategory === category.id ? "contained" : "outlined"}
+      onClick={() => setSelectedCategory(category.id)}
+      sx={{ 
+        borderRadius: '20px',
+        px: 2,
+        py: 0.8,
+        backgroundColor: selectedCategory === category.id 
+          ? (darkMode ? '#1976d2' : '#1976d2') 
+          : 'transparent',
+        borderColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+        color: selectedCategory === category.id 
+          ? '#fff' 
+          : (darkMode ? '#fff' : '#333'),
+        '&:hover': {
+          backgroundColor: selectedCategory === category.id 
+            ? (darkMode ? '#1565c0' : '#1565c0') 
+            : (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
+          borderColor: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
+        },
+        textTransform: 'none',
+        fontWeight: 500,
+        fontSize: '0.9rem',
+        transition: 'all 0.2s ease'
+      }}
+    >
+      {category.name}
+    </Button>
+  ))}
+</Box>
 
                     {isLoading ? (
             <Box sx={{ 
@@ -559,7 +528,7 @@ import ShareProduct from './ShareProduct';
                 margin: '0 auto'
               }}
             >
-   {filteredProducts.map((product) => (
+  {filteredProducts.map((product) => (
   <Grid 
     item 
     xs={6} 
@@ -568,69 +537,92 @@ import ShareProduct from './ShareProduct';
     lg={3} 
     key={`product-${product.id}`}
     sx={{
-      padding: { xs: '4px', sm: '8px', md: '12px' }
+      padding: { xs: '8px', sm: '12px', md: '16px' }
     }}
   >
-    <Box sx={{ position: 'relative' }}>
-      {/* Megosztás gomb abszolút pozícióban a kártya felett */}
-      <Box sx={{ 
-        position: 'absolute', 
-        top: '10px', 
-        right: '10px', 
-        zIndex: 1000,
-        backgroundColor: darkMode ? 'rgba(51, 51, 51, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-        borderRadius: '50%',
-        padding: '4px'
-      }}>
-        <ShareProduct product={product} darkMode={darkMode} />
-      </Box>
-      
-      {/* Termék kártya Link-ben */}
-      <Link to={`/termek/${product.id}`} style={{ textDecoration: 'none', display: 'block', width: '100%' }}>
+    <Box sx={{ 
+      position: 'relative',
+      height: '100%',
+      transition: 'transform 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-8px)'
+      }
+    }}>
+      {/* Link a termék részleteihez */}
+      <Link to={`/termek/${product.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
         <Card sx={{
-          height: { xs: '300px', sm: '400px', md: '500px' },
-          backgroundColor: darkMode ? '#333' : 'white',
-          color: darkMode ? 'white' : 'black',
-          transition: 'transform 0.2s',
-          border: darkMode ? '1px solid #fff' : '1px solid #000',
-          '&:hover': {
-            transform: 'scale(1.02)'
-          },
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          width: '100%'
+          backgroundColor: darkMode ? '#222' : 'white',
+          color: darkMode ? 'white' : 'black',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: darkMode 
+            ? '0 8px 20px rgba(0, 0, 0, 0.3)' 
+            : '0 8px 20px rgba(0, 0, 0, 0.1)',
+          border: 'none',
+          transition: 'all 0.3s ease',
         }}>
-          {/* Kártya tartalma a megosztás gomb nélkül */}
+          {/* Kép konténer */}
           <Box sx={{ 
             position: 'relative', 
-            height: { xs: '150px', sm: '200px', md: '300px' },
-            width: '100%'
+            paddingTop: '100%', // 1:1 arány a képeknek
+            overflow: 'hidden',
+            backgroundColor: darkMode ? '#333' : '#f5f5f5'
           }}>
             <CardMedia
               component="img"
               sx={{
-                height: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
                 width: '100%',
-                objectFit: 'contain'
+                height: '100%',
+                objectFit: 'contain',
+                padding: '12px',
+                transition: 'transform 0.5s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)'
+                }
               }}
               image={imageMap[product.imageUrl]}
               alt={product.nev}
             />
+            
+            {/* Ár badge */}
+            <Box sx={{
+              position: 'absolute',
+              bottom: 10,
+              right: 10,
+              backgroundColor: 'rgba(25, 118, 210, 0.85)',
+              color: 'white',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              backdropFilter: 'blur(5px)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}>
+              {product.ar} Ft
+            </Box>
           </Box>
+          
+          {/* Tartalom */}
           <CardContent sx={{ 
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
-            p: { xs: '8px', sm: '16px' }
+            p: { xs: 1.5, sm: 2 },
+            gap: 0.5
           }}>
             <Typography 
               variant="h6" 
-              color={darkMode ? 'white' : 'black'}
               sx={{ 
-                fontSize: { xs: '0.8rem', sm: '1rem', md: '1.25rem' },
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                color: darkMode ? 'white' : '#333',
                 mb: 0.5,
-                fontWeight: 'bold',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
@@ -640,34 +632,68 @@ import ShareProduct from './ShareProduct';
             >
               {product.nev}
             </Typography>
-            <Typography 
-              variant="h6" 
-              color="primary"
-              sx={{ 
-                fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' },
-                fontWeight: 'bold',
-                mb: 0.5
-              }}
-            >
-              {product.ar} Ft
-            </Typography>
+            
             <Typography 
               variant="body2" 
-              color={darkMode ? 'grey.300' : 'text.secondary'}
-              sx={{ 
-                fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
+              sx={{
+                color: darkMode ? '#ccc' : '#555',
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical'
+                WebkitBoxOrient: 'vertical',
+                lineHeight: 1.3,
+                mt: 'auto',
+                mb: 1
               }}
             >
               {product.termekleiras}
             </Typography>
+            
+            <Box sx={{ 
+              mt: 'auto', 
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <Button 
+                size="small" 
+                sx={{
+                  minWidth: 'auto',
+                  color: darkMode ? '#90caf9' : '#1976d2',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.08)',
+                  '&:hover': {
+                    backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.2)' : 'rgba(25, 118, 210, 0.15)'
+                  }
+                }}
+              >
+                Részletek
+              </Button>
+            </Box>
           </CardContent>
         </Card>
       </Link>
+      
+      {/* Megosztás gomb */}
+      <Box sx={{ 
+        position: 'absolute', 
+        top: '10px', 
+        right: '10px', 
+        zIndex: 10,
+        backgroundColor: darkMode ? 'rgba(34, 34, 34, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+        borderRadius: '50%',
+        padding: '4px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        backdropFilter: 'blur(4px)'
+      }}>
+       <ShareProduct product={product} darkMode={darkMode} source="oterm" />
+      </Box>
     </Box>
   </Grid>
 ))}

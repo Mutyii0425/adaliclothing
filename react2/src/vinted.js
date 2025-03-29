@@ -47,55 +47,60 @@ export default function Vinted() {
   const anchorRef = useRef(null);
   const navigate = useNavigate();
   
-  // A useEffect-ben, ahol a termékeket lekérjük, módosítsuk a kódot:
-useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('http://localhost:5000/products');
-let data = await response.json();
-console.log("Products fetched:", data);
-      
-      // Lekérjük a feltöltők profilképeit
-      const productsWithProfileImages = await Promise.all(data.map(async (product) => {
-        if (product.feltolto) {
-          try {
-            console.log(`Profilkép lekérése: ${product.feltolto}`);
-            const profileResponse = await fetch(`http://localhost:5000/profile-image/${product.feltolto}`);
-            
-            if (!profileResponse.ok) {
-              console.log(`Nem sikerült lekérni a profilképet: ${product.feltolto}, státusz: ${profileResponse.status}`);
-              return product;
-            }
-            
-            const profileData = await profileResponse.json();
-            console.log(`Profilkép válasz: `, profileData);
-            
-            if (profileData.success && profileData.profileImage) {
-              console.log(`Profilkép sikeresen lekérve: ${product.feltolto}`);
-              return {
-                ...product,
-                feltoltoKep: profileData.profileImage
-              };
-            }
-          } catch (error) {
-            console.error(`Hiba a profilkép lekérésekor: ${product.feltolto}`, error);
-          }
-        }
-        return product;
-      }));
-      
-      console.log('Termékek profilképekkel:', productsWithProfileImages);
-      setProducts(productsWithProfileImages);
-    } catch (error) {
-      console.log('Hiba a termékek lekérésekor:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  fetchProducts();
-}, []);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('http://localhost:5000/products');
+        let data = await response.json();
+        console.log("Products fetched:", data);
+        
+        // Ellenőrizzük, hogy a termékek tartalmazzák-e a feltolto mezőt
+        data.forEach(product => {
+          console.log(`Termék: ${product.nev}, Feltöltő: ${product.feltolto || 'Nincs megadva'}`);
+        });
+        
+        // Lekérjük a feltöltők profilképeit
+        const productsWithProfileImages = await Promise.all(data.map(async (product) => {
+          if (product.feltolto) {
+            try {
+              console.log(`Profilkép lekérése: ${product.feltolto}`);
+              const profileResponse = await fetch(`http://localhost:5000/profile-image/${product.feltolto}`);
+              
+              if (!profileResponse.ok) {
+                console.log(`Nem sikerült lekérni a profilképet: ${product.feltolto}, státusz: ${profileResponse.status}`);
+                return product;
+              }
+              
+              const profileData = await profileResponse.json();
+              console.log(`Profilkép válasz: `, profileData);
+              
+              if (profileData.success && profileData.profileImage) {
+                console.log(`Profilkép sikeresen lekérve: ${product.feltolto}`);
+                return {
+                  ...product,
+                  feltoltoKep: profileData.profileImage
+                };
+              }
+            } catch (error) {
+              console.error(`Hiba a profilkép lekérésekor: ${product.feltolto}`, error);
+            }
+          }
+          return product;
+        }));
+        
+        console.log('Termékek profilképekkel:', productsWithProfileImages);
+        setProducts(productsWithProfileImages);
+      } catch (error) {
+        console.log('Hiba a termékek lekérésekor:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+  
 
 
   
@@ -507,185 +512,59 @@ console.log("Products fetched:", data);
         </Typography>
 
         <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    gap: 2, 
-                    mb: 4, 
-                    flexWrap: 'wrap',
-                    marginTop: '20px'
-                  }}>
-                    <Button 
-                      variant="contained"
-                      onClick={() => setSelectedCategory(null)}
-                      sx={{ 
-                        backgroundColor: !selectedCategory ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: !selectedCategory ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Összes
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Pólók')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Pólók' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Pólók' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Pólók
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Nadrágok')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Nadrágok' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Nadrágok' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Nadrágok
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Pulloverek')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Pulloverek' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Pulloverek' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Pulóverek
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Zoknik')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Zoknik' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Zoknik' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Zoknik
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Kabátok')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Kabátok' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Kabátok' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Kabátok
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Lábviseletek')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Lábviseletek' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Lábviseletek' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Lábviseletek
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Atléták')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Atléták' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Atléták' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Atléták
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Szoknyák')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Szoknyák' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Szoknyák' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Szoknyák
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Alsóneműk')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Alsóneműk' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Alsóneműk' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Alsóneműk
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Mellények')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Mellények' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Mellények' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Mellények
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Sapkák')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Sapkák' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Sapkák' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Sapkák
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSelectedCategory('Kiegészítők')}
-                      sx={{ 
-                        backgroundColor: selectedCategory === 'Kiegészítők' ? '#333' : '#555',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: selectedCategory === 'Kiegészítők' ? '#444' : '#666',
-                        }
-                      }}
-                    >
-                      Kiegészítők
-                    </Button>
-                
-
-                  </Box>
+  display: 'flex', 
+  justifyContent: 'center', 
+  gap: 1.5, 
+  mb: 5, 
+  flexWrap: 'wrap',
+  marginTop: '30px'
+}}>
+  {[
+    { id: null, name: 'Összes' },
+    { id: 'Pólók', name: 'Pólók' },
+    { id: 'Nadrágok', name: 'Nadrágok' },
+    { id: 'Pulloverek', name: 'Pulóverek' },
+    { id: 'Zoknik', name: 'Zoknik' },
+    { id: 'Kabátok', name: 'Kabátok' },
+    { id: 'Lábviseletek', name: 'Lábviseletek' },
+    { id: 'Atléták', name: 'Atléták' },
+    { id: 'Szoknyák', name: 'Szoknyák' },
+    { id: 'Alsóneműk', name: 'Alsóneműk' },
+    { id: 'Mellények', name: 'Mellények' },
+    { id: 'Sapkák', name: 'Sapkák' },
+    { id: 'Kiegészítők', name: 'Kiegészítők' }
+  ].map(category => (
+    <Button 
+      key={category.id || 'all'}
+      variant={selectedCategory === category.id ? "contained" : "outlined"}
+      onClick={() => setSelectedCategory(category.id)}
+      sx={{ 
+        borderRadius: '20px',
+        px: 2,
+        py: 0.8,
+        backgroundColor: selectedCategory === category.id 
+          ? (darkMode ? '#1976d2' : '#1976d2') 
+          : 'transparent',
+        borderColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+        color: selectedCategory === category.id 
+          ? '#fff' 
+          : (darkMode ? '#fff' : '#333'),
+        '&:hover': {
+          backgroundColor: selectedCategory === category.id 
+            ? (darkMode ? '#1565c0' : '#1565c0') 
+            : (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
+          borderColor: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
+        },
+        textTransform: 'none',
+        fontWeight: 500,
+        fontSize: '0.9rem',
+        transition: 'all 0.2s ease'
+      }}
+    >
+      {category.name}
+    </Button>
+  ))}
+</Box>
 
         {isLoading ? (
   <Box sx={{
@@ -703,91 +582,183 @@ console.log("Products fetched:", data);
   </Box>
 ) : (
   <Grid container spacing={3}>
-    {filteredProducts.map((product) => (
-      <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-        <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
-        <Card sx={{
- height: '600px',
-  backgroundColor: darkMode ? '#333' : 'white',
-  color: darkMode ? 'white' : 'black',
-  transition: 'transform 0.2s',
-  border: darkMode ? '1px solid #fff' : '1px solid #000',
-  '&:hover': {
-    transform: 'scale(1.02)'
-  }
-}}>
-            <Box sx={{ position: 'relative', height: '350px' }}>
-              <CardMedia
-                component="img"
-                sx={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'contain'
-                }}
-                image={product.imageUrl}
-                alt={product.nev}
-              />
-            </Box>
-            <CardContent sx={{ 
-  flexGrow: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  p: { xs: '8px', sm: '16px' }
-}}>
-  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-    <Typography variant="h6" color={darkMode ? 'white' : 'black'}>
-      {product.nev}
-    </Typography>
-    
-    <ShareProduct product={product} darkMode={darkMode} />
-  </Box>
-  
-  {product.feltolto && (
-    <Box sx={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      mt: 1, 
-      mb: 1,
-      gap: 1
+   {filteredProducts.map((product) => (
+    <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+  <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
+    <Card sx={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: darkMode ? '#222' : 'white',
+      color: darkMode ? 'white' : 'black',
+      transition: 'all 0.3s ease',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      boxShadow: darkMode 
+        ? '0 8px 20px rgba(0, 0, 0, 0.3)' 
+        : '0 8px 20px rgba(0, 0, 0, 0.1)',
+      border: 'none',
+      '&:hover': {
+        transform: 'translateY(-8px)',
+        boxShadow: darkMode 
+          ? '0 12px 30px rgba(0, 0, 0, 0.5)' 
+          : '0 12px 30px rgba(0, 0, 0, 0.15)'
+      }
     }}>
-      <Avatar 
-  src={product.feltoltoKep ? `data:image/jpeg;base64,${product.feltoltoKep}` : null} 
-  alt={product.feltolto}
-  sx={{ 
-    width: 24, 
-    height: 24,
-    bgcolor: !product.feltoltoKep ? '#1976d2' : 'transparent'
-  }}
->
-  {!product.feltoltoKep && product.feltolto.charAt(0).toUpperCase()}
-</Avatar>
-      <Typography 
-        variant="body2" 
-        color={darkMode ? 'grey.400' : 'text.secondary'}
-        sx={{ fontSize: '0.75rem' }}
-      >
-        Feltöltő: {product.feltolto}
-      </Typography>
-    </Box>
-  )}
-  
-  <Typography variant="h6" color="primary">
-    {product.ar} Ft
-  </Typography>
-  
-  <Typography variant="body2" color={darkMode ? 'grey.300' : 'text.secondary'}>
-    {product.leiras}
-  </Typography>
-  
-  <Typography variant="body2" color={darkMode ? 'grey.300' : 'text.secondary'}>
-    Méret: {product.meret}
-  </Typography>
-</CardContent>
-          </Card>
-        </Link>
-      </Grid>
-    ))}
+      <Box sx={{ 
+        position: 'relative', 
+        paddingTop: '120%', // 5:6 arány a képeknek
+        overflow: 'hidden',
+        backgroundColor: darkMode ? '#333' : '#f5f5f5'
+      }}>
+        <CardMedia
+          component="img"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease'
+          }}
+          image={product.imageUrl}
+          alt={product.nev}
+        />
+        {/* Ár badge */}
+        <Box sx={{
+          position: 'absolute',
+          bottom: 10,
+          right: 10,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          padding: '6px 12px',
+          borderRadius: '20px',
+          fontWeight: 'bold',
+          fontSize: '1rem',
+          backdropFilter: 'blur(5px)'
+        }}>
+          {product.ar} Ft
+        </Box>
+      </Box>
+      
+      <CardContent sx={{ 
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+        gap: 1
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start'
+        }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600,
+              fontSize: '1.1rem',
+              color: darkMode ? 'white' : '#333',
+              mb: 0.5
+            }}
+          >
+            {product.nev}
+          </Typography>
+          
+          <ShareProduct product={product} darkMode={darkMode} source="vinted" />
+        </Box>
+        
+        {/* Feltöltő információk */}
+        {product.feltolto && (
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            mt: 0.5
+          }}>
+            <Avatar 
+              src={product.feltoltoKep} 
+              alt={product.feltolto}
+              sx={{ 
+                width: 28, 
+                height: 28,
+                bgcolor: !product.feltoltoKep ? '#1976d2' : 'transparent',
+                border: '2px solid',
+                borderColor: darkMode ? '#444' : '#e0e0e0'
+              }}
+            >
+              {!product.feltoltoKep && product.feltolto.charAt(0).toUpperCase()}
+            </Avatar>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontSize: '0.8rem',
+                color: darkMode ? '#aaa' : '#666',
+                fontWeight: 500
+              }}
+            >
+              {product.feltolto}
+            </Typography>
+          </Box>
+        )}
+        
+        <Typography 
+          variant="body2" 
+          sx={{
+            color: darkMode ? '#ccc' : '#555',
+            mt: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            lineHeight: 1.3
+          }}
+        >
+          {product.leiras}
+        </Typography>
+        
+        <Box sx={{ 
+          mt: 'auto', 
+          pt: 1,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Typography 
+            variant="body2" 
+            sx={{
+              color: darkMode ? '#aaa' : '#666',
+              fontWeight: 500,
+              padding: '3px 10px',
+              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              borderRadius: '12px',
+              fontSize: '0.75rem'
+            }}
+          >
+            Méret: {product.meret}
+          </Typography>
+          
+          <Button 
+            size="small" 
+            sx={{
+              minWidth: 'auto',
+              color: darkMode ? '#90caf9' : '#1976d2',
+              '&:hover': {
+                backgroundColor: darkMode ? 'rgba(144, 202, 249, 0.1)' : 'rgba(25, 118, 210, 0.1)'
+              }
+            }}
+          >
+            Részletek
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  </Link>
+</Grid>
+
+))}
   </Grid>
 )}
 

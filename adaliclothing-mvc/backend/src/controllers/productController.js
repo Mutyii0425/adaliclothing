@@ -69,15 +69,38 @@ class ProductController {
 
   async createUserProduct(req, res) {
     try {
-      const { kategoriaId, ar, nev, leiras, meret, imageUrl, images } = req.body;
+      console.log('Beérkezett adatok:', req.body);
+      
+      // Ellenőrizd, hogy minden szükséges adat megvan-e
+      const { kategoriaId, ar, nev, leiras, meret, imageUrl, images, feltolto } = req.body;
+      
+      if (!kategoriaId || !ar || !nev || !leiras || !meret || !imageUrl) {
+        return res.status(400).json({ 
+          error: 'Hiányzó adatok', 
+          received: req.body,
+          missing: {
+            kategoriaId: !kategoriaId,
+            ar: !ar,
+            nev: !nev,
+            leiras: !leiras,
+            meret: !meret,
+            imageUrl: !imageUrl
+          }
+        });
+      }
+      
       const productId = await this.productModel.createUserProduct({
-        kategoriaId, ar, nev, leiras, meret, imageUrl, images
+        kategoriaId, ar, nev, leiras, meret, imageUrl, images, feltolto
       });
       
-      res.json({ success: true, id: productId });
+      res.status(201).json({ 
+        success: true,
+        id: productId,
+        message: 'Termék sikeresen létrehozva' 
+      });
     } catch (error) {
       console.error('Error creating user product:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Adatbázis hiba' });
     }
   }
 

@@ -35,14 +35,30 @@ class ProductModel {
   }
 
   async createUserProduct(productData) {
-    const { kategoriaId, ar, nev, leiras, meret, imageUrl, images } = productData;
+    console.log('Model received data:', productData);
     
-    const [result] = await this.db.execute(
-      'INSERT INTO usertermekek (kategoriaId, ar, nev, leiras, meret, imageUrl, images) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [kategoriaId, ar, nev, leiras, meret, imageUrl, JSON.stringify(images)]
-    );
+    const { kategoriaId, ar, nev, leiras, meret, imageUrl, images, feltolto } = productData;
     
-    return result.insertId;
+    try {
+      const [result] = await this.db.execute(
+        'INSERT INTO usertermekek (kategoriaId, ar, nev, leiras, meret, imageUrl, images, feltolto) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [kategoriaId, ar, nev, leiras, meret, imageUrl, JSON.stringify(images || []), feltolto]
+      );
+      
+      return result.insertId;
+    } catch (error) {
+      console.error('Database error in createUserProduct:', error);
+      throw error;
+    }
+  }
+
+  async getAllUserProductsWithUploaderInfo() {
+    const [rows] = await this.db.execute(`
+      SELECT ut.*, u.profile_image as feltoltoKep
+      FROM usertermekek ut
+      LEFT JOIN user u ON ut.feltolto = u.felhasznalonev
+    `);
+    return rows;
   }
 
   async updateProduct(id, productData) {

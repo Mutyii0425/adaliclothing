@@ -19,13 +19,20 @@ import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ShareProduct = ({ product, darkMode }) => {
+const ShareProduct = ({ product, darkMode, source }) => {
   const [open, setOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Termék URL létrehozása
-  const productUrl = window.location.origin + (product.id ? `/termek/${product.id}` : `/product/${product.id}`);
+  // Ellenőrizzük, hogy a terméknek van-e kategoriaId tulajdonsága
+  // Ha van, akkor az oterm.js oldalról jön (eredeti termékek)
+  // Ha nincs, akkor a vinted.js oldalról jön (feltöltött termékek)
+  const isOriginalProduct = product.hasOwnProperty('kategoriaId');
+  
+  // Termék URL létrehozása a megfelelő elérési úttal
+  const productUrl = window.location.origin + 
+    (source === 'oterm' ? `/termek/${product.id}` : `/product/${product.id}`);
+  
   
   // Termék neve és ára a megosztáshoz
   const productTitle = product.nev || 'Adali Clothing termék';
@@ -319,6 +326,18 @@ const ShareProduct = ({ product, darkMode }) => {
               >
                 {productPrice}
               </Typography>
+              
+              {/* Megjelenítjük a link típusát */}
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  display: 'block',
+                  mt: 1,
+                  color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+                }}
+              >
+                Link típusa: {isOriginalProduct ? 'Eredeti termék' : 'Feltöltött termék'}
+              </Typography>
             </Box>
             
             <Divider sx={{ 
@@ -421,38 +440,35 @@ const ShareProduct = ({ product, darkMode }) => {
     </Modal>
 
     <Snackbar
-  open={snackbarOpen}
-  autoHideDuration={3000}
-  onClose={handleSnackbarClose}
-  // Ne használj anchorOrigin-t, helyette használj egyéni sx-et
-  sx={{
-    position: 'fixed',
-    zIndex: 9999,
-    top: '80%',
-    transform: 'translateX(0)',
-  }}
-  onClick={(e) => e.stopPropagation()}
->
-  <Alert 
-    onClose={handleSnackbarClose} 
-    severity="success" 
-    sx={{ 
-      width: '100%',
-      backgroundColor: darkMode ? '#2e7d32' : '#e8f5e9',
-      color: darkMode ? '#fff' : '#2e7d32',
-      borderRadius: '12px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-    }}
-    onClick={(e) => e.stopPropagation()}
-  >
-    {snackbarMessage}
-  </Alert>
-</Snackbar>
-
-
-
+      open={snackbarOpen}
+      autoHideDuration={3000}
+      onClose={handleSnackbarClose}
+      sx={{
+        position: 'fixed',
+        zIndex: 9999,
+        top: '80%',
+        transform: 'translateX(0)',
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Alert 
+        onClose={handleSnackbarClose} 
+        severity="success" 
+        sx={{ 
+          width: '100%',
+          backgroundColor: darkMode ? '#2e7d32' : '#e8f5e9',
+          color: darkMode ? '#fff' : '#2e7d32',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
   </Box>
 );
 };
 
 export default ShareProduct;
+

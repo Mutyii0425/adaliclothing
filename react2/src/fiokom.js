@@ -85,6 +85,13 @@ export default function Fiokom() {
   const [profileImage, setProfileImage] = useState(null);
   const fileInputRef = useRef(null);
   
+  // Define orderStats state
+  const [orderStats, setOrderStats] = useState({
+    totalOrders: 0,
+    totalAmount: 0,
+    lastOrderDate: null
+  });
+  
   const [couponInfo, setCouponInfo] = useState({
     hasCoupon: false,
     couponCode: '',
@@ -105,17 +112,32 @@ export default function Fiokom() {
         isUsed: !!user.kupon_hasznalva
       });
       
-      // Profilkép lekérése
-      if (user.username) {
+      // Check if profile image exists in localStorage
+      if (user.profileImage) {
+        setProfileImage(user.profileImage);
+      } else if (user.username) {
+        // If not in localStorage, try to load from server
         loadProfileImage(user.username);
       }
     }
   }, []);
   
   const loadProfileImage = async (username) => {
-    const image = await getUserProfileImage(username);
-    if (image) {
-      setProfileImage(image);
+    try {
+      const image = await getUserProfileImage(username);
+      if (image) {
+        setProfileImage(image);
+        
+        // Also update localStorage for consistency
+        const user = JSON.parse(localStorage.getItem('user')) || {};
+        if (!user.profileImage) {
+          user.profileImage = image;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      }
+    } catch (error) {
+      console.error('Hiba a profilkép betöltésekor:', error);
+      // Continue with default avatar (no need to show error to user)
     }
   };
   
@@ -123,34 +145,60 @@ export default function Fiokom() {
     const file = event.target.files[0];
     if (!file) return;
     
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A kép mérete túl nagy. Kérjük, válassz 5MB-nál kisebb képet.');
+      return;
+    }
+    
     const reader = new FileReader();
     reader.onload = async (e) => {
       const imageData = e.target.result;
-      setProfileImage(imageData);
       
-      if (userData && userData.username) {
-        const success = await saveUserProfileImage(userData.username, imageData);
-        if (success) {
-          console.log('Profilkép sikeresen feltöltve');
-        } else {
-          console.error('Hiba a profilkép feltöltésekor');
+      try {
+        if (userData && userData.username) {
+          // Show loading state
+          setProfileImage(null); // Optional: clear current image to show loading state
+          
+          const success = await saveUserProfileImage(userData.username, imageData);
+          if (success) {
+            console.log('Profilkép sikeresen feltöltve');
+            
+            // Update local state
+            setProfileImage(imageData);
+            
+            // Store in localStorage for menu2.js to access
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            user.profileImage = imageData;
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Dispatch a custom event to notify other components
+            window.dispatchEvent(new Event('profileImageUpdated'));
+          } else {
+            console.error('Hiba a profilkép feltöltésekor');
+            alert('Nem sikerült feltölteni a profilképet. Kérjük, próbáld újra később.');
+          }
         }
+      } catch (error) {
+        console.error('Hiba a profilkép feltöltése során:', error);
+        alert('Hiba történt a kép feltöltése során. Kérjük, próbáld újra később.');
       }
     };
+    
+    reader.onerror = () => {
+      console.error('Hiba a fájl olvasása közben');
+      alert('Nem sikerült beolvasni a képet. Kérjük, próbálj egy másik képet.');
+    };
+    
     reader.readAsDataURL(file);
   };
   
+  // Define openFileSelector function
   const openFileSelector = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
-
-  const [orderStats, setOrderStats] = useState({
-    totalOrders: 0,
-    totalAmount: 0,
-    lastOrderDate: null
-  });
   
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -607,64 +655,85 @@ export default function Fiokom() {
   <Divider sx={{ my: 2 }} />
   
   {couponInfo.hasCoupon ? (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-          Kupon kód:
-        </Typography>
-        <Typography variant="body1">
-          {couponInfo.couponCode}
-        </Typography>
-      </Box>
-      
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-          Státusz:
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: couponInfo.isUsed 
-              ? (darkMode ? '#ff6b6b' : '#d32f2f') 
-              : (darkMode ? '#4caf50' : '#2e7d32'),
-            fontWeight: 'medium'
-          }}
-        >
-          {couponInfo.isUsed ? 'Felhasználva' : 'Aktív'}
-        </Typography>
-      </Box>
-      
-      {couponInfo.isUsed && (
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            mt: 2, 
-            color: darkMode ? '#aaa' : '#666',
-            fontStyle: 'italic'
-          }}
-        >
-          Ez a kupon már fel lett használva egy korábbi rendelés során.
-        </Typography>
-      )}
-      
-      {!couponInfo.isUsed && (
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            mt: 2, 
-            color: darkMode ? '#aaa' : '#666',
-            fontStyle: 'italic'
-          }}
-        >
-          Ezt a kupont felhasználhatod a következő rendelésed során.
-        </Typography>
-      )}
+  <Box>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+      <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+        Kupon kód:
+      </Typography>
+      <Typography variant="body1">
+        {couponInfo.couponCode}
+      </Typography>
     </Box>
-  ) : (
-    <Typography variant="body1" sx={{ color: darkMode ? '#aaa' : '#666' }}>
-      Jelenleg nincs aktív kuponod. Regisztráció után szerezhetsz kedvezménykupont.
-    </Typography>
-  )}
+    
+    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Typography variant="subtitle2" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+        Státusz:
+      </Typography>
+      <Typography 
+        variant="body1" 
+        sx={{ 
+          color: couponInfo.isUsed 
+            ? (darkMode ? '#ff6b6b' : '#d32f2f') 
+            : couponInfo.couponCode === 'Nincs nyeremény'
+              ? (darkMode ? '#aaa' : '#666')
+              : (darkMode ? '#4caf50' : '#2e7d32'),
+          fontWeight: 'medium'
+        }}
+      >
+        {couponInfo.isUsed 
+          ? 'Felhasználva' 
+          : couponInfo.couponCode === 'Nincs nyeremény'
+            ? 'Nem alkalmazható'
+            : 'Aktív'
+        }
+      </Typography>
+    </Box>
+    
+    {couponInfo.isUsed && (
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          mt: 2, 
+          color: darkMode ? '#aaa' : '#666',
+          fontStyle: 'italic'
+        }}
+      >
+        Ez a kupon már fel lett használva egy korábbi rendelés során.
+      </Typography>
+    )}
+    
+    {!couponInfo.isUsed && couponInfo.couponCode === 'Nincs nyeremény' && (
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          mt: 2, 
+          color: darkMode ? '#aaa' : '#666',
+          fontStyle: 'italic'
+        }}
+      >
+        Sajnos nem nyertél kedvezményt a sorsoláson.
+      </Typography>
+    )}
+    
+    {!couponInfo.isUsed && couponInfo.couponCode !== 'Nincs nyeremény' && (
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          mt: 2, 
+          color: darkMode ? '#aaa' : '#666',
+          fontStyle: 'italic'
+        }}
+      >
+        Ezt a kupont felhasználhatod a következő rendelésed során.
+      </Typography>
+    )}
+  </Box>
+) : (
+  <Typography variant="body1" sx={{ color: darkMode ? '#aaa' : '#666' }}>
+    Jelenleg nincs aktív kuponod. Regisztráció után szerezhetsz kedvezménykupont.
+  </Typography>
+)}
+
 </Paper>
 
 
